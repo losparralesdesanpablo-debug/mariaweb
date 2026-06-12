@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+/* ── Variables del diseño (del prototipo) ────────────────────────────────── */
+:root {
+  --cielo: #EAF6FF;
+  --tinta: #2A4D69;
+  --coral: #FF7A6B;
+  --coral-osc: #E8604F;
+  --sol: #FFC93D;
+  --hierba: #5BCB77;
+  --nube: #FFFFFF;
+  --borde-camino: #BFE0F2;
+}
+
+/* ── Reset y base ────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 15% 10%, #FFF7DE 0%, transparent 28%),
+    radial-gradient(circle at 88% 85%, #DFF3E4 0%, transparent 30%),
+    var(--cielo);
+  color: var(--tinta);
+}
+
+/* ── Botones zona niña ───────────────────────────────────────────────────── */
+.boton {
+  width: 78px;
+  height: 78px;
+  border: none;
+  border-radius: 26px;
+  background: var(--nube);
+  box-shadow: 0 5px 0 rgba(42,77,105,.14);
+  font-size: 38px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .1s ease;
+}
+.boton:active {
+  transform: scale(.92) translateY(3px);
+  box-shadow: 0 2px 0 rgba(42,77,105,.14);
+}
+
+/* ── Indicadores de nivel ────────────────────────────────────────────────── */
+.punto {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--borde-camino);
+  transition: all .25s ease;
+}
+.punto.actual {
+  background: var(--sol);
+  border-color: var(--sol);
+  transform: scale(1.3);
+}
+.punto.hecho {
+  background: var(--hierba);
+  border-color: var(--hierba);
+}
+
+/* ── Pantalla de celebración ────────────────────────────────────────────── */
+.fiesta {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  background: rgba(234,246,255,.86);
+  backdrop-filter: blur(4px);
+  z-index: 20;
+  text-align: center;
+}
+.fiesta.visible {
+  display: flex;
+  animation: aparecer .35s ease;
+}
+@keyframes aparecer {
+  from { opacity: 0; transform: scale(.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.estrellota {
+  font-size: 110px;
+  animation: brincar .7s ease infinite alternate;
+}
+@keyframes brincar {
+  from { transform: translateY(0) rotate(-6deg); }
+  to   { transform: translateY(-22px) rotate(6deg); }
+}
+
+.fiesta h1 {
+  font-size: 56px;
+  letter-spacing: 1px;
+  color: var(--coral-osc);
+  text-shadow: 0 3px 0 #fff;
+}
+
+.acciones {
+  display: flex;
+  gap: 26px;
+}
+
+.botonazo {
+  border: none;
+  border-radius: 34px;
+  padding: 26px 40px;
+  font-size: 34px;
+  font-family: inherit;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 7px 0 rgba(42,77,105,.18);
+  transition: transform .1s ease;
+  min-width: 220px;
+}
+.botonazo:active {
+  transform: scale(.94) translateY(4px);
+  box-shadow: 0 2px 0 rgba(42,77,105,.18);
+}
+.botonazo.repetir {
+  background: var(--sol);
+  color: var(--tinta);
+}
+.botonazo.seguir {
+  background: var(--hierba);
+}
+
+.datos-adulto {
+  font-size: 15px;
+  color: #8AA7BC;
+  margin-top: 6px;
+}
+
+/* ── Zona de padres (inputs, cards) ─────────────────────────────────────── */
+.campo {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid #BFE0F2;
+  border-radius: 16px;
+  font-size: 18px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .15s;
+  background: #fff;
+  color: var(--tinta);
+}
+.campo:focus {
+  border-color: var(--sol);
+}
+
+.btn-padres {
+  padding: 16px 32px;
+  border: none;
+  border-radius: 20px;
+  font-size: 18px;
+  font-family: inherit;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform .1s ease, box-shadow .1s ease;
+  box-shadow: 0 5px 0 rgba(42,77,105,.14);
+  min-height: 60px;
+}
+.btn-padres:active {
+  transform: scale(.96) translateY(3px);
+  box-shadow: 0 2px 0 rgba(42,77,105,.14);
+}
+.btn-padres.primario {
+  background: var(--sol);
+  color: var(--tinta);
+}
+.btn-padres.secundario {
+  background: var(--hierba);
+  color: #fff;
+}
+.btn-padres.peligro {
+  background: var(--coral);
+  color: #fff;
+}
