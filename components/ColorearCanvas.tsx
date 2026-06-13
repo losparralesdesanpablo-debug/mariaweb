@@ -153,18 +153,20 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
     setFiesta(false);
 
     const dibujo = DIBUJOS[idx];
-    const w = canvas.width;
-    const h = canvas.height;
+    // Usar dimensiones CSS (lógicas), no físicas — el ctx ya tiene setTransform(dpr)
+    const w = innerWidth;
+    const h = innerHeight;
     const ctx = canvas.getContext("2d")!;
 
-    // Fondo blanco
+    // Fondo blanco — limpiar todo el espacio lógico
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
 
-    // Tamaño del dibujo: cuadrado centrado, 75% del lado menor
-    const lado = Math.min(w, h) * 0.75;
+    // Tamaño del dibujo: cuadrado centrado dejando espacio para barra (96px) y paleta (110px)
+    const areaH = h - 96 - 110;
+    const lado = Math.min(w * 0.85, areaH * 0.95);
     const ox = (w - lado) / 2;
-    const oy = (h - lado) / 2;
+    const oy = 96 + (areaH - lado) / 2;
 
     const cached = imgCacheRef.current.get(dibujo.id);
     function dibujarImg(img: HTMLImageElement) {
@@ -235,6 +237,7 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
     const py = Math.floor((e.clientY - rect.top)  * scaleY);
 
     const ctx = canvas.getContext("2d")!;
+    // Las coordenadas del toque vienen en CSS px → convertir a px físicos del canvas
     floodFill(ctx, px, py, colorSel, canvas.width, canvas.height);
 
     if (sonido) pip(440 + Math.random() * 200, 0.08, 0.12);
@@ -268,10 +271,10 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
 
   return (
     <>
-      {/* Barra superior */}
+      {/* Barra superior — z-index alto para estar sobre el canvas */}
       <div
-        className="fixed left-0 right-0 flex items-center justify-between px-5 z-10 pointer-events-none"
-        style={{ top: "env(safe-area-inset-top, 0px)", height: 96 }}
+        className="fixed left-0 right-0 flex items-center justify-between px-5 pointer-events-none"
+        style={{ top: "env(safe-area-inset-top, 0px)", height: 96, zIndex: 20 }}
       >
         {/* Botón voz */}
         <button
@@ -300,11 +303,11 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
         </div>
       </div>
 
-      {/* Canvas principal */}
+      {/* Canvas principal — z-index bajo para que la paleta quede encima */}
       <canvas
         ref={canvasRef}
         className="fixed inset-0"
-        style={{ touchAction: "none", cursor: "crosshair" }}
+        style={{ touchAction: "none", cursor: "crosshair", zIndex: 1 }}
         onPointerDown={onPointerDown}
       />
 
@@ -315,10 +318,10 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
         </div>
       )}
 
-      {/* Paleta de colores (parte inferior) */}
+      {/* Paleta de colores (parte inferior) — z-index alto para estar sobre el canvas */}
       <div
-        className="fixed left-0 right-0 flex justify-center gap-4 z-10 px-4"
-        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)" }}
+        className="fixed left-0 right-0 flex justify-center gap-4 px-4"
+        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)", zIndex: 20 }}
       >
         {PALETA.map((color) => (
           <button
