@@ -69,36 +69,35 @@ export const DIBUJOS: Dibujo[] = [
       { id: "nube_izq", nombre: "Nube izquierda", marcador: M.G1 },
       { id: "nube_der", nombre: "Nube derecha",   marcador: M.G2 },
     ],
-    // Las bandas son anillos dibujados como paths de donut para que cada zona sea accesible
+    // Bandas dibujadas de mayor a menor radio. Cada banda siguiente tapa el interior
+    // de la anterior. Entre cada par hay un stroke negro grueso que actúa de frontera
+    // para el flood-fill. Las nubes están DEBAJO del arco para no solaparse.
+    // Centro del arco: cx=150 cy=215. Radios: 140, 112, 84, 56, 28 (delta=28 cada banda).
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <!-- Bandas del arco: cada una es un anillo (path con dos arcos) accesible individualmente -->
-  <!-- Banda roja: r148 a r122 -->
-  <path d="M 2,210 A 148,148 0 0,1 298,210 L 274,210 A 124,124 0 0,0 26,210 Z" fill="${M.R1}" stroke="black" stroke-width="6"/>
-  <!-- Banda naranja: r122 a r96 -->
-  <path d="M 26,210 A 124,124 0 0,1 274,210 L 250,210 A 100,100 0 0,0 50,210 Z" fill="${M.A3}" stroke="black" stroke-width="6"/>
-  <!-- Banda amarilla: r96 a r70 -->
-  <path d="M 50,210 A 100,100 0 0,1 250,210 L 226,210 A 76,76 0 0,0 74,210 Z" fill="${M.A1}" stroke="black" stroke-width="6"/>
-  <!-- Banda verde: r70 a r44 -->
-  <path d="M 74,210 A 76,76 0 0,1 226,210 L 202,210 A 52,52 0 0,0 98,210 Z" fill="${M.V1}" stroke="black" stroke-width="6"/>
-  <!-- Banda azul: r44 a r18 -->
-  <path d="M 98,210 A 52,52 0 0,1 202,210 L 178,210 A 28,28 0 0,0 122,210 Z" fill="${M.B1}" stroke="black" stroke-width="6"/>
+  <!-- Banda roja r140 (más grande) -->
+  <path d="M 10,215 A 140,140 0 0,1 290,215 L 290,215 L 10,215 Z" fill="${M.R1}" stroke="black" stroke-width="9"/>
+  <!-- Banda naranja r112 encima (tapa interior de roja) -->
+  <path d="M 38,215 A 112,112 0 0,1 262,215 L 262,215 L 38,215 Z" fill="${M.A3}" stroke="black" stroke-width="9"/>
+  <!-- Banda amarilla r84 -->
+  <path d="M 66,215 A 84,84 0 0,1 234,215 L 234,215 L 66,215 Z" fill="${M.A1}" stroke="black" stroke-width="9"/>
+  <!-- Banda verde r56 -->
+  <path d="M 94,215 A 56,56 0 0,1 206,215 L 206,215 L 94,215 Z" fill="${M.V1}" stroke="black" stroke-width="9"/>
+  <!-- Banda azul r28 (más pequeña) -->
+  <path d="M 122,215 A 28,28 0 0,1 178,215 L 178,215 L 122,215 Z" fill="${M.B1}" stroke="black" stroke-width="9"/>
+  <!-- Línea base negra — cierra todas las bandas por abajo, barrera para flood-fill -->
+  <line x1="0" y1="215" x2="300" y2="215" stroke="black" stroke-width="10"/>
   <!-- Tapar parte inferior -->
-  <rect x="0" y="210" width="300" height="90" fill="white"/>
-  <!-- Bordes negros encima -->
-  <path d="M 2,210 A 148,148 0 0,1 298,210" fill="none" stroke="black" stroke-width="8"/>
-  <path d="M 26,210 A 124,124 0 0,1 274,210" fill="none" stroke="black" stroke-width="8"/>
-  <path d="M 50,210 A 100,100 0 0,1 250,210" fill="none" stroke="black" stroke-width="8"/>
-  <path d="M 74,210 A 76,76 0 0,1 226,210" fill="none" stroke="black" stroke-width="8"/>
-  <path d="M 98,210 A 52,52 0 0,1 202,210" fill="none" stroke="black" stroke-width="8"/>
-  <path d="M 122,210 A 28,28 0 0,1 178,210" fill="none" stroke="black" stroke-width="8"/>
-  <!-- Nubes -->
-  <ellipse cx="38"  cy="200" rx="34" ry="24" fill="${M.G1}" stroke="black" stroke-width="8"/>
-  <ellipse cx="65"  cy="188" rx="28" ry="22" fill="${M.G1}" stroke="black" stroke-width="8"/>
-  <ellipse cx="88"  cy="200" rx="30" ry="22" fill="${M.G1}" stroke="black" stroke-width="8"/>
-  <ellipse cx="262" cy="200" rx="34" ry="24" fill="${M.G2}" stroke="black" stroke-width="8"/>
-  <ellipse cx="235" cy="188" rx="28" ry="22" fill="${M.G2}" stroke="black" stroke-width="8"/>
-  <ellipse cx="212" cy="200" rx="30" ry="22" fill="${M.G2}" stroke="black" stroke-width="8"/>
+  <rect x="0" y="220" width="300" height="80" fill="white"/>
+  <!-- Reborde exterior -->
+  <path d="M 10,215 A 140,140 0 0,1 290,215" fill="none" stroke="black" stroke-width="9"/>
+  <!-- Nubes encima del rect blanco -->
+  <ellipse cx="35"  cy="258" rx="32" ry="22" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <ellipse cx="60"  cy="245" rx="26" ry="20" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <ellipse cx="82"  cy="258" rx="28" ry="20" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <ellipse cx="265" cy="258" rx="32" ry="22" fill="${M.G2}" stroke="black" stroke-width="8"/>
+  <ellipse cx="240" cy="245" rx="26" ry="20" fill="${M.G2}" stroke="black" stroke-width="8"/>
+  <ellipse cx="218" cy="258" rx="28" ry="20" fill="${M.G2}" stroke="black" stroke-width="8"/>
 </svg>`,
   },
 
