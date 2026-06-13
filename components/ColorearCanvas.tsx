@@ -130,7 +130,7 @@ function detectarZona(
   if (r<60 && g<60 && b<60) return null; // línea negra
   for (const z of zonas) {
     const [zr,zg,zb] = hexToComponents(z.marcador);
-    if (Math.abs(r-zr)<=35 && Math.abs(g-zg)<=35 && Math.abs(b-zb)<=35) return z.id;
+    if (Math.abs(r-zr)<=12 && Math.abs(g-zg)<=12 && Math.abs(b-zb)<=12) return z.id;
   }
   return null;
 }

@@ -13,16 +13,29 @@ export interface Dibujo {
   svg: string; // SVG con rellenos de color marcador en cada zona
 }
 
-// Colores marcadores: suficientemente distintos entre sí y lejos del negro/blanco
+// Colores marcadores: todos gris muy claro, casi blancos visualmente.
+// Separados ≥25 en al menos un canal para que detectarZona (tolerancia 12) los distinga.
+// El dibujo se ve "sin pintar" hasta que la niña lo colorea.
 const M = {
-  A1: "#FFF0A0", A2: "#FFE070", A3: "#FFCC40",
-  V1: "#A0FFA0", V2: "#70FF70", V3: "#40FF80",
-  B1: "#A0D0FF", B2: "#70B0FF", B3: "#4090FF",
-  R1: "#FFB0C0", R2: "#FF8090", R3: "#FF5060",
-  O1: "#F0D090", O2: "#E0B860", O3: "#D0A040",
-  L1: "#E0B0FF", L2: "#C080FF",
-  C1: "#A0FFEE", C2: "#60FFD0",
-  G1: "#E8E8E8", G2: "#D0D0D0",
+  //        R    G    B      — canal que los distingue
+  A1: "#F8F8D0", // 248,248,208  — B bajo
+  A2: "#F8F0C8", // 248,240,200  — G y B bajos
+  A3: "#F8E8C0", // 248,232,192  — G y B más bajos
+  V1: "#D0F8D0", // 208,248,208  — R y B bajos
+  V2: "#C8F8C8", // 200,248,200  — R y B más bajos
+  V3: "#C0F0C0", // 192,240,192  — R y B bajos2
+  B1: "#D0E8F8", // 208,232,248  — R bajo
+  B2: "#C8D8F8", // 200,216,248  — R y G bajos
+  B3: "#C0C8F0", // 192,200,240  — R y G más bajos
+  R1: "#F8D0D8", // 248,208,216  — G y B bajos
+  R2: "#F8C8C8", // 248,200,200  — G y B más bajos
+  O1: "#F8E0C8", // 248,224,200  — G medio, B bajo
+  O2: "#F0D8C0", // 240,216,192  — G y B bajos2
+  L1: "#E8D0F8", // 232,208,248  — R y G bajos
+  L2: "#E0C8F8", // 224,200,248  — R y G más bajos
+  C1: "#C8F8F0", // 200,248,240  — R bajo
+  G1: "#F0F0F0", // 240,240,240  — gris neutro
+  G2: "#E8E8E0", // 232,232,224  — B ligeramente bajo
 };
 
 export const DIBUJOS: Dibujo[] = [
@@ -251,10 +264,10 @@ export const DIBUJOS: Dibujo[] = [
   <polygon points="150,190 225,260 75,260" fill="${M.V3}" stroke="black" stroke-width="10"/>
   <polygon points="150,140 215,220 85,220"  fill="${M.V2}" stroke="black" stroke-width="10"/>
   <polygon points="150,78  200,165 100,165" fill="${M.V1}" stroke="black" stroke-width="10"/>
-  <!-- Frutos decorativos (no pintables) -->
-  <circle cx="138" cy="205" r="9" fill="red" stroke="black" stroke-width="6"/>
-  <circle cx="162" cy="215" r="9" fill="red" stroke="black" stroke-width="6"/>
-  <circle cx="148" cy="228" r="9" fill="red" stroke="black" stroke-width="6"/>
+  <!-- Frutos decorativos -->
+  <circle cx="138" cy="205" r="9" fill="white" stroke="black" stroke-width="6"/>
+  <circle cx="162" cy="215" r="9" fill="white" stroke="black" stroke-width="6"/>
+  <circle cx="148" cy="228" r="9" fill="white" stroke="black" stroke-width="6"/>
 </svg>`,
   },
 
@@ -435,12 +448,12 @@ export const DIBUJOS: Dibujo[] = [
   <circle cx="150" cy="116" r="42" fill="${M.V1}" stroke="black" stroke-width="10"/>
   <!-- Bola alta encima -->
   <circle cx="150" cy="78"  r="36" fill="${M.A1}" stroke="black" stroke-width="10"/>
-  <!-- Topping decorativo (no zona) -->
-  <path d="M 124 70 Q 118 55 128 48 Q 138 42 144 52 Q 150 42 160 46 Q 170 52 165 68" fill="none" stroke="#8B4513" stroke-width="10" stroke-linecap="round"/>
+  <!-- Topping decorativo -->
+  <path d="M 124 70 Q 118 55 128 48 Q 138 42 144 52 Q 150 42 160 46 Q 170 52 165 68" fill="none" stroke="black" stroke-width="10" stroke-linecap="round"/>
   <!-- Virutas -->
-  <circle cx="142" cy="62"  r="5" fill="red"   stroke="black" stroke-width="3"/>
-  <circle cx="160" cy="68"  r="5" fill="#4090FF" stroke="black" stroke-width="3"/>
-  <circle cx="150" cy="52"  r="5" fill="#70FF70" stroke="black" stroke-width="3"/>
+  <circle cx="142" cy="62"  r="5" fill="white" stroke="black" stroke-width="3"/>
+  <circle cx="160" cy="68"  r="5" fill="white" stroke="black" stroke-width="3"/>
+  <circle cx="150" cy="52"  r="5" fill="white" stroke="black" stroke-width="3"/>
 </svg>`,
   },
 
@@ -638,9 +651,9 @@ export const DIBUJOS: Dibujo[] = [
   <path d="M 150 218 C 92 177 58 148 58 112 C 58 88 74 72 96 72 C 112 72 128 81 150 100 C 172 81 188 72 204 72 C 226 72 242 88 242 112 C 242 148 208 177 150 218 Z" fill="${M.R2}" stroke="black" stroke-width="9"/>
   <!-- Corazón interior encima -->
   <path d="M 150 182 C 110 156 90 136 90 118 C 90 104 100 95 114 95 C 126 95 138 103 150 116 C 162 103 174 95 186 95 C 200 95 210 104 210 118 C 210 136 190 156 150 182 Z" fill="${M.A1}" stroke="black" stroke-width="8"/>
-  <!-- Destellos decorativos (no zona) -->
-  <polygon points="38,45  43,58  55,58  46,67  50,80  38,72  26,80  30,67  21,58  33,58"  fill="#FFC93D" stroke="black" stroke-width="5"/>
-  <polygon points="262,45 267,58 279,58 270,67 274,80 262,72 250,80 254,67 245,58 257,58" fill="#FFC93D" stroke="black" stroke-width="5"/>
+  <!-- Destellos decorativos -->
+  <polygon points="38,45  43,58  55,58  46,67  50,80  38,72  26,80  30,67  21,58  33,58"  fill="white" stroke="black" stroke-width="5"/>
+  <polygon points="262,45 267,58 279,58 270,67 274,80 262,72 250,80 254,67 245,58 257,58" fill="white" stroke="black" stroke-width="5"/>
 </svg>`,
   },
 
