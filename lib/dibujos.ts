@@ -13,29 +13,28 @@ export interface Dibujo {
   svg: string; // SVG con rellenos de color marcador en cada zona
 }
 
-// Colores marcadores: todos gris muy claro, casi blancos visualmente.
-// Separados ≥25 en al menos un canal para que detectarZona (tolerancia 12) los distinga.
-// El dibujo se ve "sin pintar" hasta que la niña lo colorea.
+// Marcadores: grises puros (R=G=B), todos visualmente neutros, ninguno parece pintado.
+// Separados de 10 en 10 — tolerancia de detección 8 los distingue sin ambigüedad.
+// Rango 130-220 (ni demasiado oscuro ni blanco puro, para evitar confusión con fondo/borde).
 const M = {
-  //        R    G    B      — canal que los distingue
-  A1: "#F8F8D0", // 248,248,208  — B bajo
-  A2: "#F8F0C8", // 248,240,200  — G y B bajos
-  A3: "#F8E8C0", // 248,232,192  — G y B más bajos
-  V1: "#D0F8D0", // 208,248,208  — R y B bajos
-  V2: "#C8F8C8", // 200,248,200  — R y B más bajos
-  V3: "#C0F0C0", // 192,240,192  — R y B bajos2
-  B1: "#D0E8F8", // 208,232,248  — R bajo
-  B2: "#C8D8F8", // 200,216,248  — R y G bajos
-  B3: "#C0C8F0", // 192,200,240  — R y G más bajos
-  R1: "#F8D0D8", // 248,208,216  — G y B bajos
-  R2: "#F8C8C8", // 248,200,200  — G y B más bajos
-  O1: "#F8E0C8", // 248,224,200  — G medio, B bajo
-  O2: "#F0D8C0", // 240,216,192  — G y B bajos2
-  L1: "#E8D0F8", // 232,208,248  — R y G bajos
-  L2: "#E0C8F8", // 224,200,248  — R y G más bajos
-  C1: "#C8F8F0", // 200,248,240  — R bajo
-  G1: "#F0F0F0", // 240,240,240  — gris neutro
-  G2: "#E8E8E0", // 232,232,224  — B ligeramente bajo
+  A1: "#E6E6E6", // 230
+  A2: "#DCDCDC", // 220  — ojo: mismo que antes era G1, renombrado
+  A3: "#D2D2D2", // 210
+  V1: "#C8C8C8", // 200
+  V2: "#BEBEBE", // 190
+  V3: "#B4B4B4", // 180
+  B1: "#AAAAAA", // 170  — gris medio, perfectamente visible como "sin pintar"
+  B2: "#A0A0A0", // 160
+  B3: "#969696", // 150
+  R1: "#E0E0E0", // 224  — entre A1 y A2
+  R2: "#D6D6D6", // 214
+  O1: "#CCCCCC", // 204
+  O2: "#C2C2C2", // 194
+  L1: "#B8B8B8", // 184
+  L2: "#AEAEAE", // 174
+  C1: "#A4A4A4", // 164
+  G1: "#F0F0F0", // 240  — gris muy claro (para zonas grandes de fondo)
+  G2: "#E8E8E8", // 232
 };
 
 export const DIBUJOS: Dibujo[] = [

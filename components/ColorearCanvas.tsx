@@ -119,20 +119,32 @@ function floodFill(
   return marcadorTocado;
 }
 
-// Detectar qué zona fue tocada comparando color del píxel con los marcadores del dibujo
+// Detectar qué zona fue tocada comparando color del píxel con los marcadores del dibujo.
+// Muestra una cuadrícula de 5×5 alrededor del punto tocado y vota por mayoría
+// para combatir el antialiasing en los bordes del SVG rasterizado.
 function detectarZona(
   ctx: CanvasRenderingContext2D,
   px: number, py: number,
   zonas: { id:string; marcador:string }[]
 ): string | null {
-  const p = ctx.getImageData(px,py,1,1).data;
-  const r=p[0],g=p[1],b=p[2];
-  if (r<60 && g<60 && b<60) return null; // línea negra
-  for (const z of zonas) {
-    const [zr,zg,zb] = hexToComponents(z.marcador);
-    if (Math.abs(r-zr)<=12 && Math.abs(g-zg)<=12 && Math.abs(b-zb)<=12) return z.id;
+  const votos: Record<string, number> = {};
+  const step = 2;
+  for (let dx = -2; dx <= 2; dx++) {
+    for (let dy = -2; dy <= 2; dy++) {
+      const p = ctx.getImageData(px + dx * step, py + dy * step, 1, 1).data;
+      const r = p[0], g = p[1], b = p[2];
+      if (r < 60 && g < 60 && b < 60) continue; // línea negra
+      if (r > 250 && g > 250 && b > 250) continue; // fondo blanco
+      for (const z of zonas) {
+        const [zr, zg, zb] = hexToComponents(z.marcador);
+        if (Math.abs(r-zr) <= 8 && Math.abs(g-zg) <= 8 && Math.abs(b-zb) <= 8) {
+          votos[z.id] = (votos[z.id] ?? 0) + 1;
+        }
+      }
+    }
   }
-  return null;
+  const ganador = Object.entries(votos).sort((a, b) => b[1] - a[1])[0];
+  return ganador ? ganador[0] : null;
 }
 
 // ─── Paleta ───────────────────────────────────────────────────────────────────
