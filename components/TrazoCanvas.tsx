@@ -217,6 +217,7 @@ interface TrazoCanvasProps {
   actividades: Actividad[];
   config: ConfiguracionNino;
   actividadId: (codigo: string) => string;
+  onCambiarModo?: () => void;
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -225,6 +226,7 @@ export default function TrazoCanvas({
   actividades,
   config,
   actividadId,
+  onCambiarModo,
 }: TrazoCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const confetiRef = useRef<HTMLCanvasElement>(null);
@@ -576,16 +578,27 @@ export default function TrazoCanvas({
           ))}
         </div>
 
-        <button
-          className="boton pointer-events-auto"
-          aria-label="Borrar y repetir"
-          onClick={() => {
-            if (config.sonido) pip(300, 0.12, 0.12, "triangle");
-            cargarNivel(nivelActualRef.current, false);
-          }}
-        >
-          🧽
-        </button>
+        <div className="flex gap-3 pointer-events-auto">
+          {onCambiarModo && (
+            <button
+              className="boton"
+              aria-label="Ir a colorear"
+              onClick={onCambiarModo}
+            >
+              🎨
+            </button>
+          )}
+          <button
+            className="boton"
+            aria-label="Borrar y repetir"
+            onClick={() => {
+              if (config.sonido) pip(300, 0.12, 0.12, "triangle");
+              cargarNivel(nivelActualRef.current, false);
+            }}
+          >
+            🧽
+          </button>
+        </div>
       </div>
 
       {/* Canvas de dibujo */}

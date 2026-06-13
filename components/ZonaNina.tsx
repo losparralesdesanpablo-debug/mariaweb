@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import TrazoCanvas from "./TrazoCanvas";
+import ColorearCanvas from "./ColorearCanvas";
 import { setNinoId, iniciarReintentoCola } from "@/lib/trazo-store";
 import type { Actividad, ConfiguracionNino } from "@/lib/types";
 
@@ -15,6 +16,7 @@ interface ZonaNinaProps {
 export default function ZonaNina({ actividades, config, ninoId }: ZonaNinaProps) {
   const router = useRouter();
   const timerPadresRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [modo, setModo] = useState<"trazos" | "colorear">("trazos");
   const [actividadIdMap] = useState<Map<string, string>>(() => {
     const m = new Map<string, string>();
     for (const a of actividades) m.set(a.codigo, a.id);
@@ -26,7 +28,6 @@ export default function ZonaNina({ actividades, config, ninoId }: ZonaNinaProps)
     iniciarReintentoCola();
   }, [ninoId]);
 
-  // Botón oculto de 3 segundos para ir a la zona de padres
   function iniciarLargoPadres() {
     timerPadresRef.current = setTimeout(() => {
       router.push("/padres");
@@ -44,7 +45,6 @@ export default function ZonaNina({ actividades, config, ninoId }: ZonaNinaProps)
     return actividadIdMap.get(codigo) ?? "";
   }
 
-  // Fallback si no hay actividades (Supabase no configurado aún)
   const actividadesFallback: Actividad[] =
     actividades.length > 0
       ? actividades
@@ -56,13 +56,22 @@ export default function ZonaNina({ actividades, config, ninoId }: ZonaNinaProps)
 
   return (
     <>
-      <TrazoCanvas
-        actividades={actividadesFallback}
-        config={config}
-        actividadId={actividadId}
-      />
+      {modo === "trazos" ? (
+        <TrazoCanvas
+          actividades={actividadesFallback}
+          config={config}
+          actividadId={actividadId}
+          onCambiarModo={() => setModo("colorear")}
+        />
+      ) : (
+        <ColorearCanvas
+          sonido={config.sonido}
+          voz={config.voz}
+          onCambiarModo={() => setModo("trazos")}
+        />
+      )}
 
-      {/* Botón discreto esquina inferior izquierda: mantener 3s para ir a /padres */}
+      {/* Botón invisible esquina inferior izquierda: mantener 3s → /padres */}
       <button
         className="fixed bottom-0 left-0 z-50 opacity-0"
         style={{ width: 78, height: 78, touchAction: "none" }}
