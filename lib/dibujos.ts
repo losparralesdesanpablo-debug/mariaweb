@@ -67,25 +67,6 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 2. LUNA ──────────────────────────────────────────────────────────────
-  {
-    id: "luna",
-    titulo: "La luna",
-    frase: "¡Pinta la luna y las estrellas!",
-    zonas: [
-      { id: "luna",      nombre: "Luna", marcador: M.A1 },
-      { id: "estrella1", nombre: "Estrella 1", marcador: M.V1 },
-      { id: "estrella2", nombre: "Estrella 2", marcador: M.B1 },
-      { id: "estrella3", nombre: "Estrella 3", marcador: M.R1 },
-    ],
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="white"/>
-  <path d="M 175 55 A 90 90 0 1 0 175 245 A 60 60 0 1 1 175 55 Z" fill="${M.A1}" stroke="black" stroke-width="10"/>
-  <polygon points="245,55 252,78 276,78 257,93 264,116 245,101 226,116 233,93 214,78 238,78" fill="${M.V1}" stroke="black" stroke-width="7"/>
-  <polygon points="255,165 260,178 274,178 263,187 267,200 255,191 243,200 247,187 236,178 250,178" fill="${M.B1}" stroke="black" stroke-width="7"/>
-  <polygon points="230,120 234,130 245,130 237,137 240,148 230,141 220,148 223,137 215,130 226,130" fill="${M.R1}" stroke="black" stroke-width="6"/>
-</svg>`,
-  },
 
   // ─── 3. ARCOÍRIS ──────────────────────────────────────────────────────────
   {
