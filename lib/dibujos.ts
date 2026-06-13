@@ -1,272 +1,739 @@
+export interface Zona {
+  id: string;
+  nombre: string;
+  // Color marcador único en el SVG para identificar esta zona (relleno inicial)
+  marcador: string;
+}
+
 export interface Dibujo {
   id: string;
   titulo: string;
   frase: string;
-  svg: string;
+  zonas: Zona[];
+  svg: string; // SVG con rellenos de color marcador en cada zona
 }
 
-// Todos los SVGs usan viewBox="0 0 300 300", líneas negras de 10px,
-// fondo blanco explícito, zonas completamente cerradas para flood fill.
+// Colores marcadores: sutilmente distintos, lejos del negro de las líneas
+// y del blanco del fondo. Nunca se ven porque los tapamos con el fondo al renderizar...
+// En realidad SÍ se usan para rasterizar el SVG y detectar zonas al tocar.
+// El SVG se renderiza con los marcadores, se lee qué zona tocaste, se flood-fill con el color elegido.
+
+const M = {
+  // Amarillos/naranjas
+  A1: "#FFF0A0", A2: "#FFE070", A3: "#FFCC40",
+  // Verdes
+  V1: "#A0FFA0", V2: "#70FF70", V3: "#40FF80",
+  // Azules
+  B1: "#A0D0FF", B2: "#70B0FF", B3: "#4090FF",
+  // Rosas/rojos
+  R1: "#FFB0C0", R2: "#FF8090", R3: "#FF5060",
+  // Marrones/ocres
+  O1: "#F0D090", O2: "#E0B860", O3: "#D0A040",
+  // Lilas
+  L1: "#E0B0FF", L2: "#C080FF",
+  // Cianes
+  C1: "#A0FFEE", C2: "#60FFD0",
+  // Gris claro
+  G1: "#E8E8E8", G2: "#D0D0D0",
+};
+
 export const DIBUJOS: Dibujo[] = [
+  // ─── 1. SOL ───────────────────────────────────────────────────────────────
   {
     id: "sol",
     titulo: "El sol",
     frase: "¡Pinta el sol bien brillante!",
+    zonas: [
+      { id: "circulo", nombre: "Sol", marcador: M.A1 },
+      { id: "rayos",   nombre: "Rayos", marcador: M.A2 },
+    ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <circle cx="150" cy="150" r="55" fill="white" stroke="black" stroke-width="10"/>
-  <line x1="150" y1="60" x2="150" y2="30" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <line x1="150" y1="240" x2="150" y2="270" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <line x1="60" y1="150" x2="30" y2="150" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <line x1="240" y1="150" x2="270" y2="150" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <line x1="88" y1="88" x2="67" y2="67" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <line x1="212" y1="88" x2="233" y2="67" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <line x1="88" y1="212" x2="67" y2="233" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <line x1="212" y1="212" x2="233" y2="233" stroke="black" stroke-width="10" stroke-linecap="round"/>
+  <!-- Rayos (8 elipses rotadas) -->
+  <ellipse cx="150" cy="65"  rx="14" ry="28" fill="${M.A2}" stroke="black" stroke-width="9"/>
+  <ellipse cx="150" cy="65"  rx="14" ry="28" fill="${M.A2}" stroke="black" stroke-width="9" transform="rotate(45 150 150)"/>
+  <ellipse cx="150" cy="65"  rx="14" ry="28" fill="${M.A2}" stroke="black" stroke-width="9" transform="rotate(90 150 150)"/>
+  <ellipse cx="150" cy="65"  rx="14" ry="28" fill="${M.A2}" stroke="black" stroke-width="9" transform="rotate(135 150 150)"/>
+  <ellipse cx="150" cy="65"  rx="14" ry="28" fill="${M.A2}" stroke="black" stroke-width="9" transform="rotate(180 150 150)"/>
+  <ellipse cx="150" cy="65"  rx="14" ry="28" fill="${M.A2}" stroke="black" stroke-width="9" transform="rotate(225 150 150)"/>
+  <ellipse cx="150" cy="65"  rx="14" ry="28" fill="${M.A2}" stroke="black" stroke-width="9" transform="rotate(270 150 150)"/>
+  <ellipse cx="150" cy="65"  rx="14" ry="28" fill="${M.A2}" stroke="black" stroke-width="9" transform="rotate(315 150 150)"/>
+  <!-- Círculo central -->
+  <circle cx="150" cy="150" r="62" fill="${M.A1}" stroke="black" stroke-width="10"/>
+  <!-- Cara -->
+  <circle cx="127" cy="140" r="8" fill="black"/>
+  <circle cx="173" cy="140" r="8" fill="black"/>
+  <path d="M 125 168 Q 150 185 175 168" fill="none" stroke="black" stroke-width="8" stroke-linecap="round"/>
 </svg>`,
   },
+
+  // ─── 2. LUNA ──────────────────────────────────────────────────────────────
   {
     id: "luna",
     titulo: "La luna",
-    frase: "¡Pinta la luna de noche!",
+    frase: "¡Pinta la luna y las estrellas!",
+    zonas: [
+      { id: "luna",      nombre: "Luna", marcador: M.A1 },
+      { id: "estrella1", nombre: "Estrella 1", marcador: M.V1 },
+      { id: "estrella2", nombre: "Estrella 2", marcador: M.B1 },
+      { id: "estrella3", nombre: "Estrella 3", marcador: M.R1 },
+    ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <path d="M 180 60 A 90 90 0 1 0 180 240 A 60 60 0 1 1 180 60 Z" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M 175 55 A 90 90 0 1 0 175 245 A 60 60 0 1 1 175 55 Z" fill="${M.A1}" stroke="black" stroke-width="10"/>
+  <polygon points="245,55 252,78 276,78 257,93 264,116 245,101 226,116 233,93 214,78 238,78" fill="${M.V1}" stroke="black" stroke-width="7"/>
+  <polygon points="255,165 260,178 274,178 263,187 267,200 255,191 243,200 247,187 236,178 250,178" fill="${M.B1}" stroke="black" stroke-width="7"/>
+  <polygon points="230,120 234,130 245,130 237,137 240,148 230,141 220,148 223,137 215,130 226,130" fill="${M.R1}" stroke="black" stroke-width="6"/>
 </svg>`,
   },
+
+  // ─── 3. ARCOÍRIS ──────────────────────────────────────────────────────────
   {
-    id: "estrella",
-    titulo: "La estrella",
-    frase: "¡Pinta la estrella!",
+    id: "arcoiris",
+    titulo: "El arcoíris",
+    frase: "¡Pinta el arcoíris de colores!",
+    zonas: [
+      { id: "banda1", nombre: "Rojo",    marcador: M.R1 },
+      { id: "banda2", nombre: "Naranja", marcador: M.A3 },
+      { id: "banda3", nombre: "Amarillo",marcador: M.A1 },
+      { id: "banda4", nombre: "Verde",   marcador: M.V1 },
+      { id: "banda5", nombre: "Azul",    marcador: M.B1 },
+      { id: "nube_izq", nombre: "Nube izquierda", marcador: M.G1 },
+      { id: "nube_der", nombre: "Nube derecha",   marcador: M.G2 },
+    ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <polygon points="150,30 179,111 265,111 197,162 222,243 150,192 78,243 103,162 35,111 121,111" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
+  <!-- Bandas del arco (de mayor a menor radio, cortadas por rect inferior) -->
+  <clipPath id="cp"><rect x="0" y="0" width="300" height="210"/></clipPath>
+  <circle cx="150" cy="210" r="148" fill="${M.R1}" stroke="black" stroke-width="9" clip-path="url(#cp)"/>
+  <circle cx="150" cy="210" r="122" fill="${M.A3}" stroke="black" stroke-width="9" clip-path="url(#cp)"/>
+  <circle cx="150" cy="210" r="96"  fill="${M.A1}" stroke="black" stroke-width="9" clip-path="url(#cp)"/>
+  <circle cx="150" cy="210" r="70"  fill="${M.V1}" stroke="black" stroke-width="9" clip-path="url(#cp)"/>
+  <circle cx="150" cy="210" r="44"  fill="${M.B1}" stroke="black" stroke-width="9" clip-path="url(#cp)"/>
+  <rect x="0" y="210" width="300" height="90" fill="white"/>
+  <!-- Nubes -->
+  <ellipse cx="38"  cy="200" rx="34" ry="24" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <ellipse cx="65"  cy="188" rx="28" ry="22" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <ellipse cx="88"  cy="200" rx="30" ry="22" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <ellipse cx="262" cy="200" rx="34" ry="24" fill="${M.G2}" stroke="black" stroke-width="8"/>
+  <ellipse cx="235" cy="188" rx="28" ry="22" fill="${M.G2}" stroke="black" stroke-width="8"/>
+  <ellipse cx="212" cy="200" rx="30" ry="22" fill="${M.G2}" stroke="black" stroke-width="8"/>
 </svg>`,
   },
+
+  // ─── 4. CASA ──────────────────────────────────────────────────────────────
   {
-    id: "nube",
-    titulo: "La nube",
-    frase: "¡Pinta la nube esponjosa!",
+    id: "casa",
+    titulo: "La casa",
+    frase: "¡Pinta la casita con sus colores!",
+    zonas: [
+      { id: "tejado",  nombre: "Tejado",  marcador: M.R1 },
+      { id: "pared",   nombre: "Pared",   marcador: M.A1 },
+      { id: "puerta",  nombre: "Puerta",  marcador: M.O1 },
+      { id: "ventana1",nombre: "Ventana izquierda", marcador: M.B1 },
+      { id: "ventana2",nombre: "Ventana derecha",   marcador: M.B2 },
+      { id: "cesped",  nombre: "Césped",  marcador: M.V1 },
+    ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <path d="M 60 190 Q 60 240 110 240 L 210 240 Q 260 240 260 190 Q 260 160 235 150 Q 240 100 200 95 Q 185 60 150 70 Q 120 60 110 90 Q 75 90 70 120 Q 45 125 60 190 Z" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
+  <rect x="20" y="265" width="260" height="35" fill="${M.V1}" stroke="black" stroke-width="9"/>
+  <rect x="50" y="148" width="200" height="120" fill="${M.A1}" stroke="black" stroke-width="9"/>
+  <polygon points="150,28 265,148 35,148" fill="${M.R1}" stroke="black" stroke-width="10"/>
+  <rect x="118" y="205" width="64" height="63" fill="${M.O1}" stroke="black" stroke-width="9"/>
+  <rect x="62"  cy="168" x="62"  y="168" width="50" height="46" fill="${M.B1}" stroke="black" stroke-width="9"/>
+  <rect x="188" y="168" width="50" height="46" fill="${M.B2}" stroke="black" stroke-width="9"/>
+  <line x1="87"  y1="168" x2="87"  y2="214" stroke="black" stroke-width="6"/>
+  <line x1="62"  y1="191" x2="112" y2="191" stroke="black" stroke-width="6"/>
+  <line x1="213" y1="168" x2="213" y2="214" stroke="black" stroke-width="6"/>
+  <line x1="188" y1="191" x2="238" y2="191" stroke="black" stroke-width="6"/>
 </svg>`,
   },
-  {
-    id: "arbol",
-    titulo: "El árbol",
-    frase: "¡Pinta el árbol del bosque!",
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="white"/>
-  <rect x="130" y="210" width="40" height="70" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <polygon points="150,30 240,210 60,210" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-</svg>`,
-  },
-  {
-    id: "flor",
-    titulo: "La flor",
-    frase: "¡Pinta la flor bonita!",
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="white"/>
-  <line x1="150" y1="175" x2="150" y2="280" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <ellipse cx="150" cy="80" rx="28" ry="45" fill="white" stroke="black" stroke-width="10"/>
-  <ellipse cx="150" cy="80" rx="28" ry="45" fill="white" stroke="black" stroke-width="10" transform="rotate(60 150 150)"/>
-  <ellipse cx="150" cy="80" rx="28" ry="45" fill="white" stroke="black" stroke-width="10" transform="rotate(120 150 150)"/>
-  <ellipse cx="150" cy="80" rx="28" ry="45" fill="white" stroke="black" stroke-width="10" transform="rotate(180 150 150)"/>
-  <ellipse cx="150" cy="80" rx="28" ry="45" fill="white" stroke="black" stroke-width="10" transform="rotate(240 150 150)"/>
-  <ellipse cx="150" cy="80" rx="28" ry="45" fill="white" stroke="black" stroke-width="10" transform="rotate(300 150 150)"/>
-  <circle cx="150" cy="150" r="30" fill="white" stroke="black" stroke-width="10"/>
-</svg>`,
-  },
+
+  // ─── 5. MARIPOSA ──────────────────────────────────────────────────────────
   {
     id: "mariposa",
     titulo: "La mariposa",
     frase: "¡Pinta la mariposa que vuela!",
+    zonas: [
+      { id: "ala_sup_izq", nombre: "Ala superior izquierda", marcador: M.R1 },
+      { id: "ala_sup_der", nombre: "Ala superior derecha",   marcador: M.A1 },
+      { id: "ala_inf_izq", nombre: "Ala inferior izquierda", marcador: M.V1 },
+      { id: "ala_inf_der", nombre: "Ala inferior derecha",   marcador: M.B1 },
+      { id: "cuerpo",      nombre: "Cuerpo",                 marcador: M.O1 },
+    ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <ellipse cx="95" cy="120" rx="75" ry="55" fill="white" stroke="black" stroke-width="10"/>
-  <ellipse cx="205" cy="120" rx="75" ry="55" fill="white" stroke="black" stroke-width="10"/>
-  <ellipse cx="95" cy="200" rx="50" ry="38" fill="white" stroke="black" stroke-width="10"/>
-  <ellipse cx="205" cy="200" rx="50" ry="38" fill="white" stroke="black" stroke-width="10"/>
-  <ellipse cx="150" cy="155" rx="12" ry="55" fill="white" stroke="black" stroke-width="10"/>
-  <line x1="145" y1="85" x2="125" y2="55" stroke="black" stroke-width="7" stroke-linecap="round"/>
-  <line x1="155" y1="85" x2="175" y2="55" stroke="black" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="88"  cy="115" rx="78" ry="58" fill="${M.R1}" stroke="black" stroke-width="10"/>
+  <ellipse cx="212" cy="115" rx="78" ry="58" fill="${M.A1}" stroke="black" stroke-width="10"/>
+  <ellipse cx="88"  cy="200" rx="54" ry="40" fill="${M.V1}" stroke="black" stroke-width="10"/>
+  <ellipse cx="212" cy="200" rx="54" ry="40" fill="${M.B1}" stroke="black" stroke-width="10"/>
+  <!-- Motivos interiores alas -->
+  <circle cx="88"  cy="110" r="22" fill="white" stroke="black" stroke-width="7"/>
+  <circle cx="212" cy="110" r="22" fill="white" stroke="black" stroke-width="7"/>
+  <circle cx="88"  cy="200" r="15" fill="white" stroke="black" stroke-width="7"/>
+  <circle cx="212" cy="200" r="15" fill="white" stroke="black" stroke-width="7"/>
+  <!-- Cuerpo -->
+  <ellipse cx="150" cy="155" rx="13" ry="60" fill="${M.O1}" stroke="black" stroke-width="10"/>
+  <!-- Antenas -->
+  <path d="M 144 96 Q 128 65 118 50" fill="none" stroke="black" stroke-width="7" stroke-linecap="round"/>
+  <path d="M 156 96 Q 172 65 182 50" fill="none" stroke="black" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="118" cy="50" r="8" fill="black"/>
+  <circle cx="182" cy="50" r="8" fill="black"/>
 </svg>`,
   },
+
+  // ─── 6. PÁJARO ────────────────────────────────────────────────────────────
+  {
+    id: "pajaro",
+    titulo: "El pájaro",
+    frase: "¡Pinta el pajarito cantarín!",
+    zonas: [
+      { id: "cuerpo",  nombre: "Cuerpo",  marcador: M.B1 },
+      { id: "ala",     nombre: "Ala",     marcador: M.B2 },
+      { id: "pecho",   nombre: "Pecho",   marcador: M.R1 },
+      { id: "pico",    nombre: "Pico",    marcador: M.A3 },
+      { id: "rama",    nombre: "Rama",    marcador: M.O2 },
+    ],
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="white"/>
+  <rect x="40" y="225" width="220" height="22" rx="11" fill="${M.O2}" stroke="black" stroke-width="9"/>
+  <!-- Cuerpo -->
+  <ellipse cx="155" cy="165" rx="72" ry="55" fill="${M.B1}" stroke="black" stroke-width="10"/>
+  <!-- Pecho -->
+  <ellipse cx="175" cy="185" rx="38" ry="30" fill="${M.R1}" stroke="black" stroke-width="9"/>
+  <!-- Ala -->
+  <ellipse cx="120" cy="155" rx="40" ry="28" fill="${M.B2}" stroke="black" stroke-width="9" transform="rotate(-20 120 155)"/>
+  <!-- Cabeza -->
+  <circle cx="205" cy="130" r="38" fill="${M.B1}" stroke="black" stroke-width="10"/>
+  <!-- Pico -->
+  <polygon points="238,128 265,120 238,112" fill="${M.A3}" stroke="black" stroke-width="8"/>
+  <!-- Ojo -->
+  <circle cx="215" cy="122" r="9"  fill="white" stroke="black" stroke-width="6"/>
+  <circle cx="217" cy="122" r="4"  fill="black"/>
+  <!-- Patas -->
+  <line x1="155" y1="218" x2="138" y2="226" stroke="black" stroke-width="8" stroke-linecap="round"/>
+  <line x1="175" y1="218" x2="188" y2="226" stroke="black" stroke-width="8" stroke-linecap="round"/>
+</svg>`,
+  },
+
+  // ─── 7. PEZ ───────────────────────────────────────────────────────────────
   {
     id: "pez",
     titulo: "El pez",
     frase: "¡Pinta el pez del mar!",
+    zonas: [
+      { id: "cuerpo",  nombre: "Cuerpo",  marcador: M.B1 },
+      { id: "aleta_d", nombre: "Aleta dorsal",  marcador: M.B2 },
+      { id: "cola",    nombre: "Cola",    marcador: M.V1 },
+      { id: "barriga", nombre: "Barriga", marcador: M.A1 },
+    ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <ellipse cx="140" cy="150" rx="95" ry="65" fill="white" stroke="black" stroke-width="10"/>
-  <polygon points="235,150 280,100 280,200" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <circle cx="90" cy="130" r="10" fill="black"/>
+  <!-- Cola -->
+  <polygon points="240,150 285,105 285,195" fill="${M.V1}" stroke="black" stroke-width="10"/>
+  <!-- Cuerpo -->
+  <ellipse cx="138" cy="150" rx="105" ry="72" fill="${M.B1}" stroke="black" stroke-width="10"/>
+  <!-- Barriga -->
+  <ellipse cx="138" cy="172" rx="75" ry="38" fill="${M.A1}" stroke="black" stroke-width="8"/>
+  <!-- Aleta dorsal -->
+  <path d="M 80 80 Q 120 60 170 78" fill="${M.B2}" stroke="black" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M 80 80 L 80 105 Q 120 95 170 105 L 170 78" fill="${M.B2}" stroke="black" stroke-width="9"/>
+  <!-- Aleta pectoral -->
+  <ellipse cx="110" cy="165" rx="28" ry="18" fill="${M.B2}" stroke="black" stroke-width="8" transform="rotate(20 110 165)"/>
+  <!-- Ojo -->
+  <circle cx="68"  cy="138" r="16" fill="white" stroke="black" stroke-width="8"/>
+  <circle cx="71"  cy="138" r="7"  fill="black"/>
+  <!-- Escamas (líneas decorativas) -->
+  <path d="M 120 110 Q 130 100 140 110" fill="none" stroke="black" stroke-width="5"/>
+  <path d="M 155 105 Q 165 95  175 105" fill="none" stroke="black" stroke-width="5"/>
+  <path d="M 140 130 Q 150 120 160 130" fill="none" stroke="black" stroke-width="5"/>
+  <path d="M 170 125 Q 180 115 190 125" fill="none" stroke="black" stroke-width="5"/>
 </svg>`,
   },
+
+  // ─── 8. ÁRBOL ─────────────────────────────────────────────────────────────
   {
-    id: "casa",
-    titulo: "La casa",
-    frase: "¡Pinta la casita!",
+    id: "arbol",
+    titulo: "El árbol",
+    frase: "¡Pinta el árbol del bosque!",
+    zonas: [
+      { id: "copa1",  nombre: "Copa de arriba",  marcador: M.V1 },
+      { id: "copa2",  nombre: "Copa del medio",  marcador: M.V2 },
+      { id: "copa3",  nombre: "Copa de abajo",   marcador: M.V3 },
+      { id: "tronco", nombre: "Tronco",           marcador: M.O2 },
+      { id: "cesped", nombre: "Suelo",            marcador: M.V1 },
+    ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <rect x="55" y="155" width="190" height="120" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <polygon points="150,35 260,155 40,155" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <rect x="120" y="210" width="60" height="65" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <rect x="70" y="175" width="45" height="45" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <rect x="185" y="175" width="45" height="45" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
+  <rect x="15" y="258" width="270" height="40" fill="${M.V1}" stroke="black" stroke-width="9"/>
+  <rect x="128" y="195" width="44" height="68" fill="${M.O2}" stroke="black" stroke-width="10"/>
+  <polygon points="150,190 225,260 75,260" fill="${M.V3}" stroke="black" stroke-width="10"/>
+  <polygon points="150,140 215,220 85,220"  fill="${M.V2}" stroke="black" stroke-width="10"/>
+  <polygon points="150,78  200,165 100,165" fill="${M.V1}" stroke="black" stroke-width="10"/>
+  <!-- Frutos -->
+  <circle cx="138" cy="205" r="9" fill="${M.R1}" stroke="black" stroke-width="6"/>
+  <circle cx="162" cy="215" r="9" fill="${M.R1}" stroke="black" stroke-width="6"/>
+  <circle cx="148" cy="228" r="9" fill="${M.R1}" stroke="black" stroke-width="6"/>
 </svg>`,
   },
-  {
-    id: "corazon",
-    titulo: "El corazón",
-    frase: "¡Pinta el corazón con amor!",
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="white"/>
-  <path d="M 150 240 C 80 190 30 150 30 105 C 30 70 55 45 90 45 C 110 45 130 55 150 75 C 170 55 190 45 210 45 C 245 45 270 70 270 105 C 270 150 220 190 150 240 Z" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-</svg>`,
-  },
-  {
-    id: "pelota",
-    titulo: "La pelota",
-    frase: "¡Pinta la pelota de colores!",
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="white"/>
-  <circle cx="150" cy="150" r="115" fill="white" stroke="black" stroke-width="10"/>
-  <path d="M 35 150 Q 92 100 150 150 Q 208 200 265 150" fill="none" stroke="black" stroke-width="10"/>
-  <path d="M 150 35 Q 100 92 150 150 Q 200 208 150 265" fill="none" stroke="black" stroke-width="10"/>
-</svg>`,
-  },
-  {
-    id: "globo",
-    titulo: "El globo",
-    frase: "¡Pinta el globo que sube!",
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="white"/>
-  <ellipse cx="150" cy="125" rx="90" ry="105" fill="white" stroke="black" stroke-width="10"/>
-  <path d="M 120 228 Q 140 250 150 265 Q 160 250 180 228" fill="none" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <line x1="130" y1="230" x2="170" y2="230" stroke="black" stroke-width="10" stroke-linecap="round"/>
-</svg>`,
-  },
-  {
-    id: "seta",
-    titulo: "La seta",
-    frase: "¡Pinta la seta del bosque!",
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="white"/>
-  <rect x="120" y="175" width="60" height="95" rx="10" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <path d="M 40 175 Q 40 50 150 50 Q 260 50 260 175 Z" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <circle cx="120" cy="110" r="18" fill="white" stroke="black" stroke-width="8"/>
-  <circle cx="170" cy="85" r="14" fill="white" stroke="black" stroke-width="8"/>
-  <circle cx="200" cy="125" r="16" fill="white" stroke="black" stroke-width="8"/>
-</svg>`,
-  },
-  {
-    id: "manzana",
-    titulo: "La manzana",
-    frase: "¡Pinta la manzana roja!",
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="white"/>
-  <path d="M 150 80 C 80 80 40 130 40 180 C 40 240 90 270 150 270 C 210 270 260 240 260 180 C 260 130 220 80 150 80 Z" fill="white" stroke="black" stroke-width="10"/>
-  <path d="M 150 80 Q 155 50 175 40" fill="none" stroke="black" stroke-width="8" stroke-linecap="round"/>
-  <ellipse cx="185" cy="35" rx="18" ry="25" fill="white" stroke="black" stroke-width="8" transform="rotate(-20 185 35)"/>
-</svg>`,
-  },
-  {
-    id: "tren",
-    titulo: "El tren",
-    frase: "¡Pinta el tren chuchú!",
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="white"/>
-  <rect x="30" y="130" width="110" height="90" rx="12" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <rect x="150" y="155" width="120" height="65" rx="10" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <rect x="55" y="105" width="60" height="35" rx="8" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <circle cx="65" cy="235" r="22" fill="white" stroke="black" stroke-width="10"/>
-  <circle cx="130" cy="235" r="22" fill="white" stroke="black" stroke-width="10"/>
-  <circle cx="195" cy="235" r="22" fill="white" stroke="black" stroke-width="10"/>
-  <circle cx="255" cy="235" r="22" fill="white" stroke="black" stroke-width="10"/>
-  <rect x="55" y="155" width="35" height="30" rx="5" fill="white" stroke="black" stroke-width="8"/>
-  <rect x="165" y="168" width="30" height="28" rx="5" fill="white" stroke="black" stroke-width="8"/>
-  <rect x="210" y="168" width="30" height="28" rx="5" fill="white" stroke="black" stroke-width="8"/>
-  <line x1="30" y1="258" x2="270" y2="258" stroke="black" stroke-width="8" stroke-linecap="round"/>
-</svg>`,
-  },
-  {
-    id: "barco",
-    titulo: "El barco",
-    frase: "¡Pinta el barco velero!",
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="white"/>
-  <path d="M 40 200 L 80 260 L 220 260 L 260 200 Z" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <line x1="150" y1="200" x2="150" y2="50" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <polygon points="150,55 150,195 60,140" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <polygon points="150,55 150,155 230,110" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-</svg>`,
-  },
-  {
-    id: "helado",
-    titulo: "El helado",
-    frase: "¡Pinta el helado rico!",
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="white"/>
-  <polygon points="150,275 90,155 210,155" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <ellipse cx="150" cy="115" rx="60" ry="50" fill="white" stroke="black" stroke-width="10"/>
-  <ellipse cx="110" cy="100" rx="42" ry="42" fill="white" stroke="black" stroke-width="10"/>
-  <ellipse cx="190" cy="100" rx="42" ry="42" fill="white" stroke="black" stroke-width="10"/>
-</svg>`,
-  },
+
+  // ─── 9. COHETE ────────────────────────────────────────────────────────────
   {
     id: "cohete",
     titulo: "El cohete",
     frase: "¡Pinta el cohete espacial!",
+    zonas: [
+      { id: "cuerpo",   nombre: "Cuerpo",    marcador: M.B1 },
+      { id: "nariz",    nombre: "Punta",     marcador: M.R1 },
+      { id: "ventana",  nombre: "Ventana",   marcador: M.A1 },
+      { id: "aleta_izq",nombre: "Aleta izq", marcador: M.V1 },
+      { id: "aleta_der",nombre: "Aleta der", marcador: M.V2 },
+      { id: "fuego",    nombre: "Fuego",     marcador: M.A3 },
+    ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <path d="M 150 25 C 110 25 85 70 85 120 L 85 220 L 150 220 L 215 220 L 215 120 C 215 70 190 25 150 25 Z" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <polygon points="85,180 45,230 85,220" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <polygon points="215,180 255,230 215,220" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <path d="M 100 240 Q 150 280 200 240" fill="white" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <circle cx="150" cy="130" r="28" fill="white" stroke="black" stroke-width="10"/>
+  <!-- Fuego -->
+  <ellipse cx="150" cy="268" rx="28" ry="22" fill="${M.A3}" stroke="black" stroke-width="9"/>
+  <ellipse cx="135" cy="255" rx="15" ry="18" fill="${M.A3}" stroke="black" stroke-width="8"/>
+  <ellipse cx="165" cy="255" rx="15" ry="18" fill="${M.A3}" stroke="black" stroke-width="8"/>
+  <!-- Aletas -->
+  <polygon points="88,180 42,235 88,222" fill="${M.V1}" stroke="black" stroke-width="9"/>
+  <polygon points="212,180 258,235 212,222" fill="${M.V2}" stroke="black" stroke-width="9"/>
+  <!-- Cuerpo -->
+  <rect x="88" y="100" width="124" height="148" rx="20" fill="${M.B1}" stroke="black" stroke-width="10"/>
+  <!-- Nariz (punta) -->
+  <path d="M 88 105 Q 88 30 150 25 Q 212 30 212 105 Z" fill="${M.R1}" stroke="black" stroke-width="10"/>
+  <!-- Ventana -->
+  <circle cx="150" cy="165" r="32" fill="${M.A1}" stroke="black" stroke-width="10"/>
+  <circle cx="150" cy="165" r="18" fill="white" stroke="black" stroke-width="7"/>
 </svg>`,
   },
+
+  // ─── 10. CASTILLO ─────────────────────────────────────────────────────────
+  {
+    id: "castillo",
+    titulo: "El castillo",
+    frase: "¡Pinta el castillo de cuento!",
+    zonas: [
+      { id: "torre_izq",  nombre: "Torre izquierda",  marcador: M.L1 },
+      { id: "torre_der",  nombre: "Torre derecha",    marcador: M.L2 },
+      { id: "pared",      nombre: "Pared central",    marcador: M.G1 },
+      { id: "puerta",     nombre: "Puerta",           marcador: M.O1 },
+      { id: "bandera_izq",nombre: "Bandera izq",      marcador: M.R1 },
+      { id: "bandera_der",nombre: "Bandera der",      marcador: M.B1 },
+    ],
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="white"/>
+  <!-- Torres laterales -->
+  <rect x="18"  y="80"  width="72" height="195" fill="${M.L1}" stroke="black" stroke-width="9"/>
+  <rect x="210" y="80"  width="72" height="195" fill="${M.L2}" stroke="black" stroke-width="9"/>
+  <!-- Almenas torres -->
+  <rect x="18"  y="60"  width="16" height="24" fill="${M.L1}" stroke="black" stroke-width="8"/>
+  <rect x="42"  y="60"  width="16" height="24" fill="${M.L1}" stroke="black" stroke-width="8"/>
+  <rect x="66"  y="60"  width="16" height="24" fill="${M.L1}" stroke="black" stroke-width="8"/>
+  <rect x="210" y="60"  width="16" height="24" fill="${M.L2}" stroke="black" stroke-width="8"/>
+  <rect x="234" y="60"  width="16" height="24" fill="${M.L2}" stroke="black" stroke-width="8"/>
+  <rect x="258" y="60"  width="16" height="24" fill="${M.L2}" stroke="black" stroke-width="8"/>
+  <!-- Pared central -->
+  <rect x="88"  y="130" width="124" height="145" fill="${M.G1}" stroke="black" stroke-width="9"/>
+  <!-- Almenas centrales -->
+  <rect x="88"  y="110" width="18" height="24" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <rect x="116" y="110" width="18" height="24" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <rect x="144" y="110" width="18" height="24" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <rect x="172" y="110" width="18" height="24" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <rect x="194" y="110" width="18" height="24" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <!-- Puerta -->
+  <path d="M 118 275 L 118 200 Q 118 172 150 172 Q 182 172 182 200 L 182 275 Z" fill="${M.O1}" stroke="black" stroke-width="9"/>
+  <!-- Ventanas torres -->
+  <rect x="38"  y="130" width="32" height="40" rx="16" fill="white" stroke="black" stroke-width="7"/>
+  <rect x="230" y="130" width="32" height="40" rx="16" fill="white" stroke="black" stroke-width="7"/>
+  <!-- Banderas -->
+  <line x1="54"  y1="60"  x2="54"  y2="22"  stroke="black" stroke-width="7"/>
+  <line x1="246" y1="60"  x2="246" y2="22"  stroke="black" stroke-width="7"/>
+  <polygon points="54,22 54,42 76,32" fill="${M.R1}" stroke="black" stroke-width="6"/>
+  <polygon points="246,22 246,42 268,32" fill="${M.B1}" stroke="black" stroke-width="6"/>
+</svg>`,
+  },
+
+  // ─── 11. CAMIÓN ───────────────────────────────────────────────────────────
+  {
+    id: "camion",
+    titulo: "El camión",
+    frase: "¡Pinta el camión de colores!",
+    zonas: [
+      { id: "cabina",   nombre: "Cabina",   marcador: M.R1 },
+      { id: "caja",     nombre: "Caja",     marcador: M.B1 },
+      { id: "rueda1",   nombre: "Rueda delantera", marcador: M.G2 },
+      { id: "rueda2",   nombre: "Rueda trasera 1", marcador: M.G2 },
+      { id: "rueda3",   nombre: "Rueda trasera 2", marcador: M.G2 },
+      { id: "ventana",  nombre: "Ventana",  marcador: M.A1 },
+    ],
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="white"/>
+  <!-- Caja de carga -->
+  <rect x="15"  y="110" width="170" height="110" rx="8" fill="${M.B1}" stroke="black" stroke-width="10"/>
+  <!-- Cabina -->
+  <rect x="185" y="140" width="95"  height="80"  rx="10" fill="${M.R1}" stroke="black" stroke-width="10"/>
+  <path d="M 185 140 L 185 108 Q 200 95 240 95 L 280 95 L 280 140 Z" fill="${M.R1}" stroke="black" stroke-width="10"/>
+  <!-- Ventana cabina -->
+  <path d="M 200 100 L 200 135 L 272 135 L 272 100 Q 252 92 220 92 Z" fill="${M.A1}" stroke="black" stroke-width="8"/>
+  <!-- Ruedas -->
+  <circle cx="62"  cy="238" r="32" fill="${M.G2}" stroke="black" stroke-width="10"/>
+  <circle cx="62"  cy="238" r="14" fill="white" stroke="black" stroke-width="8"/>
+  <circle cx="158" cy="238" r="32" fill="${M.G2}" stroke="black" stroke-width="10"/>
+  <circle cx="158" cy="238" r="14" fill="white" stroke="black" stroke-width="8"/>
+  <circle cx="240" cy="238" r="28" fill="${M.G2}" stroke="black" stroke-width="10"/>
+  <circle cx="240" cy="238" r="12" fill="white" stroke="black" stroke-width="8"/>
+  <!-- Faro -->
+  <rect x="275" y="175" width="20" height="16" rx="4" fill="white" stroke="black" stroke-width="7"/>
+</svg>`,
+  },
+
+  // ─── 12. DINOSAURIO ───────────────────────────────────────────────────────
+  {
+    id: "dino",
+    titulo: "El dinosaurio",
+    frase: "¡Pinta al dinosaurio!",
+    zonas: [
+      { id: "cuerpo",  nombre: "Cuerpo",  marcador: M.V1 },
+      { id: "barriga", nombre: "Barriga", marcador: M.A1 },
+      { id: "puas",    nombre: "Púas",    marcador: M.V3 },
+      { id: "cola",    nombre: "Cola",    marcador: M.V2 },
+    ],
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="white"/>
+  <!-- Cola -->
+  <path d="M 35 195 Q 15 250 40 265 Q 70 270 80 230" fill="${M.V2}" stroke="black" stroke-width="10"/>
+  <!-- Púas espalda -->
+  <polygon points="80,80  95,45  110,80"  fill="${M.V3}" stroke="black" stroke-width="8"/>
+  <polygon points="110,70 128,30 145,70"  fill="${M.V3}" stroke="black" stroke-width="8"/>
+  <polygon points="145,75 162,38 178,75"  fill="${M.V3}" stroke="black" stroke-width="8"/>
+  <!-- Cuerpo -->
+  <ellipse cx="155" cy="175" rx="110" ry="80" fill="${M.V1}" stroke="black" stroke-width="10"/>
+  <!-- Cabeza -->
+  <ellipse cx="238" cy="105" rx="55"  ry="42" fill="${M.V1}" stroke="black" stroke-width="10"/>
+  <!-- Cuello -->
+  <path d="M 195 135 Q 205 115 220 100" fill="none" stroke="${M.V1}" stroke-width="38"/>
+  <path d="M 195 135 Q 205 115 220 100" fill="none" stroke="black" stroke-width="10" fill="none"/>
+  <!-- Barriga -->
+  <ellipse cx="145" cy="195" rx="72" ry="48" fill="${M.A1}" stroke="black" stroke-width="8"/>
+  <!-- Ojo -->
+  <circle cx="252" cy="96"  r="10" fill="white" stroke="black" stroke-width="7"/>
+  <circle cx="255" cy="96"  r="5"  fill="black"/>
+  <!-- Boca -->
+  <path d="M 258 112 Q 270 122 260 130" fill="none" stroke="black" stroke-width="7" stroke-linecap="round"/>
+  <!-- Patas -->
+  <rect x="90"  y="240" width="38" height="48" rx="10" fill="${M.V1}" stroke="black" stroke-width="9"/>
+  <rect x="148" y="240" width="38" height="48" rx="10" fill="${M.V1}" stroke="black" stroke-width="9"/>
+  <rect x="195" y="230" width="32" height="42" rx="10" fill="${M.V1}" stroke="black" stroke-width="9"/>
+</svg>`,
+  },
+
+  // ─── 13. HELADO ───────────────────────────────────────────────────────────
+  {
+    id: "helado",
+    titulo: "El helado",
+    frase: "¡Pinta el helado rico!",
+    zonas: [
+      { id: "barquillo", nombre: "Barquillo", marcador: M.O1 },
+      { id: "bola1",     nombre: "Bola de abajo", marcador: M.R1 },
+      { id: "bola2",     nombre: "Bola del medio",marcador: M.V1 },
+      { id: "bola3",     nombre: "Bola de arriba",marcador: M.A1 },
+      { id: "topping",   nombre: "Topping",  marcador: M.O2 },
+    ],
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="white"/>
+  <!-- Barquillo -->
+  <polygon points="150,278 98,148 202,148" fill="${M.O1}" stroke="black" stroke-width="10"/>
+  <line x1="150" y1="278" x2="120" y2="200" stroke="black" stroke-width="6"/>
+  <line x1="150" y1="278" x2="150" y2="195" stroke="black" stroke-width="6"/>
+  <line x1="150" y1="278" x2="180" y2="200" stroke="black" stroke-width="6"/>
+  <!-- Bolas -->
+  <circle cx="150" cy="148" r="50" fill="${M.R1}" stroke="black" stroke-width="10"/>
+  <circle cx="150" cy="102" r="46" fill="${M.V1}" stroke="black" stroke-width="10"/>
+  <circle cx="150" cy="60"  r="40" fill="${M.A1}" stroke="black" stroke-width="10"/>
+  <!-- Topping (salsa) -->
+  <path d="M 118 60 Q 110 40 125 32 Q 138 25 145 38 Q 152 25 165 30 Q 178 38 172 55" fill="none" stroke="${M.O2}" stroke-width="12" stroke-linecap="round"/>
+  <!-- Virutas -->
+  <circle cx="140" cy="52"  r="5" fill="${M.R1}" stroke="black" stroke-width="4"/>
+  <circle cx="162" cy="58"  r="5" fill="${M.B1}" stroke="black" stroke-width="4"/>
+  <circle cx="150" cy="44"  r="5" fill="${M.V1}" stroke="black" stroke-width="4"/>
+</svg>`,
+  },
+
+  // ─── 14. FLOR ─────────────────────────────────────────────────────────────
+  {
+    id: "flor",
+    titulo: "La flor",
+    frase: "¡Pinta la flor bonita!",
+    zonas: [
+      { id: "petalo1", nombre: "Pétalo 1", marcador: M.R1 },
+      { id: "petalo2", nombre: "Pétalo 2", marcador: M.A1 },
+      { id: "petalo3", nombre: "Pétalo 3", marcador: M.L1 },
+      { id: "petalo4", nombre: "Pétalo 4", marcador: M.B1 },
+      { id: "petalo5", nombre: "Pétalo 5", marcador: M.V1 },
+      { id: "centro",  nombre: "Centro",   marcador: M.A3 },
+      { id: "tallo",   nombre: "Tallo",    marcador: M.V2 },
+    ],
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="white"/>
+  <!-- Tallo y hojas -->
+  <rect x="141" y="185" width="18" height="95" rx="9" fill="${M.V2}" stroke="black" stroke-width="9"/>
+  <ellipse cx="118" cy="240" rx="28" ry="14" fill="${M.V2}" stroke="black" stroke-width="8" transform="rotate(-35 118 240)"/>
+  <ellipse cx="182" cy="225" rx="28" ry="14" fill="${M.V2}" stroke="black" stroke-width="8" transform="rotate(35 182 225)"/>
+  <!-- Pétalos (5, rotados 72°) -->
+  <ellipse cx="150" cy="90" rx="28" ry="52" fill="${M.R1}" stroke="black" stroke-width="9"/>
+  <ellipse cx="150" cy="90" rx="28" ry="52" fill="${M.A1}" stroke="black" stroke-width="9" transform="rotate(72  150 160)"/>
+  <ellipse cx="150" cy="90" rx="28" ry="52" fill="${M.L1}" stroke="black" stroke-width="9" transform="rotate(144 150 160)"/>
+  <ellipse cx="150" cy="90" rx="28" ry="52" fill="${M.B1}" stroke="black" stroke-width="9" transform="rotate(216 150 160)"/>
+  <ellipse cx="150" cy="90" rx="28" ry="52" fill="${M.V1}" stroke="black" stroke-width="9" transform="rotate(288 150 160)"/>
+  <!-- Centro -->
+  <circle cx="150" cy="160" r="32" fill="${M.A3}" stroke="black" stroke-width="10"/>
+  <!-- Cara del centro -->
+  <circle cx="140" cy="155" r="5" fill="black"/>
+  <circle cx="160" cy="155" r="5" fill="black"/>
+  <path d="M 138 168 Q 150 178 162 168" fill="none" stroke="black" stroke-width="6" stroke-linecap="round"/>
+</svg>`,
+  },
+
+  // ─── 15. CARACOL ──────────────────────────────────────────────────────────
+  {
+    id: "caracol",
+    titulo: "El caracol",
+    frase: "¡Pinta al caracol con su casa!",
+    zonas: [
+      { id: "concha",  nombre: "Concha",   marcador: M.A1 },
+      { id: "espiral", nombre: "Espiral",  marcador: M.O1 },
+      { id: "cuerpo",  nombre: "Cuerpo",   marcador: M.V1 },
+    ],
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="white"/>
+  <!-- Cuerpo -->
+  <ellipse cx="105" cy="220" rx="95" ry="38" fill="${M.V1}" stroke="black" stroke-width="10"/>
+  <!-- Cabeza -->
+  <circle cx="50" cy="195" r="30" fill="${M.V1}" stroke="black" stroke-width="10"/>
+  <!-- Antenas -->
+  <line x1="40" y1="167" x2="32" y2="140" stroke="black" stroke-width="8" stroke-linecap="round"/>
+  <line x1="58" y1="167" x2="66" y2="140" stroke="black" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="32" cy="138" r="7" fill="black"/>
+  <circle cx="66" cy="138" r="7" fill="black"/>
+  <!-- Ojo -->
+  <circle cx="40" cy="192" r="7" fill="white" stroke="black" stroke-width="6"/>
+  <circle cx="42" cy="192" r="3" fill="black"/>
+  <!-- Boca -->
+  <path d="M 45 208 Q 55 215 62 208" fill="none" stroke="black" stroke-width="6" stroke-linecap="round"/>
+  <!-- Concha -->
+  <circle cx="178" cy="175" r="88" fill="${M.A1}" stroke="black" stroke-width="10"/>
+  <!-- Espiral interior (zonas concéntricas) -->
+  <circle cx="178" cy="175" r="62" fill="${M.O1}" stroke="black" stroke-width="8"/>
+  <circle cx="178" cy="175" r="36" fill="${M.A1}" stroke="black" stroke-width="8"/>
+  <circle cx="178" cy="175" r="14" fill="${M.O1}" stroke="black" stroke-width="7"/>
+</svg>`,
+  },
+
+  // ─── 16. BALLENA ──────────────────────────────────────────────────────────
+  {
+    id: "ballena",
+    titulo: "La ballena",
+    frase: "¡Pinta la ballena del océano!",
+    zonas: [
+      { id: "cuerpo",  nombre: "Cuerpo",   marcador: M.B1 },
+      { id: "barriga", nombre: "Barriga",  marcador: M.G1 },
+      { id: "aleta_d", nombre: "Aleta dorsal", marcador: M.B2 },
+      { id: "cola",    nombre: "Cola",     marcador: M.B2 },
+      { id: "chorro",  nombre: "Chorro",   marcador: M.C1 },
+    ],
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="white"/>
+  <!-- Chorro de agua -->
+  <ellipse cx="248" cy="72"  rx="14" ry="32" fill="${M.C1}" stroke="black" stroke-width="8" transform="rotate(-15 248 72)"/>
+  <ellipse cx="262" cy="60"  rx="11" ry="26" fill="${M.C1}" stroke="black" stroke-width="8" transform="rotate(10 262 60)"/>
+  <!-- Cola -->
+  <path d="M 28 168 Q 18 128 45 120 Q 55 148 55 168" fill="${M.B2}" stroke="black" stroke-width="10"/>
+  <path d="M 28 168 Q 18 205 45 215 Q 55 188 55 168" fill="${M.B2}" stroke="black" stroke-width="10"/>
+  <!-- Cuerpo -->
+  <ellipse cx="168" cy="178" rx="130" ry="72" fill="${M.B1}" stroke="black" stroke-width="10"/>
+  <!-- Barriga -->
+  <ellipse cx="178" cy="205" rx="88"  ry="38" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <!-- Aleta dorsal -->
+  <path d="M 175 108 Q 192 70 212 105" fill="${M.B2}" stroke="black" stroke-width="9"/>
+  <path d="M 175 108 L 212 105" fill="none" stroke="black" stroke-width="9"/>
+  <!-- Aleta pectoral -->
+  <ellipse cx="192" cy="198" rx="36" ry="20" fill="${M.B2}" stroke="black" stroke-width="8" transform="rotate(25 192 198)"/>
+  <!-- Ojo -->
+  <circle cx="258" cy="162" r="14" fill="white" stroke="black" stroke-width="8"/>
+  <circle cx="261" cy="162" r="6"  fill="black"/>
+  <!-- Boca sonriente -->
+  <path d="M 268 178 Q 280 192 268 200" fill="none" stroke="black" stroke-width="8" stroke-linecap="round"/>
+</svg>`,
+  },
+
+  // ─── 17. TREN ─────────────────────────────────────────────────────────────
+  {
+    id: "tren",
+    titulo: "El tren",
+    frase: "¡Pinta el tren chuchú!",
+    zonas: [
+      { id: "locomotora", nombre: "Locomotora",  marcador: M.R1 },
+      { id: "vagon1",     nombre: "Vagón 1",     marcador: M.B1 },
+      { id: "vagon2",     nombre: "Vagón 2",     marcador: M.V1 },
+      { id: "ruedas",     nombre: "Ruedas",      marcador: M.G2 },
+      { id: "humo",       nombre: "Humo",        marcador: M.G1 },
+    ],
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="white"/>
+  <!-- Rieles -->
+  <line x1="10" y1="248" x2="290" y2="248" stroke="black" stroke-width="8"/>
+  <line x1="10" y1="260" x2="290" y2="260" stroke="black" stroke-width="8"/>
+  <line x1="30"  y1="248" x2="30"  y2="260" stroke="black" stroke-width="6"/>
+  <line x1="75"  y1="248" x2="75"  y2="260" stroke="black" stroke-width="6"/>
+  <line x1="120" y1="248" x2="120" y2="260" stroke="black" stroke-width="6"/>
+  <line x1="165" y1="248" x2="165" y2="260" stroke="black" stroke-width="6"/>
+  <line x1="210" y1="248" x2="210" y2="260" stroke="black" stroke-width="6"/>
+  <line x1="255" y1="248" x2="255" y2="260" stroke="black" stroke-width="6"/>
+  <!-- Humo -->
+  <circle cx="250" cy="88"  r="22" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <circle cx="268" cy="68"  r="18" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <circle cx="280" cy="50"  r="14" fill="${M.G1}" stroke="black" stroke-width="8"/>
+  <!-- Chimenea -->
+  <rect x="242" y="100" width="16" height="20" fill="${M.R1}" stroke="black" stroke-width="8"/>
+  <!-- Locomotora -->
+  <rect x="195" y="130" width="95" height="88" rx="10" fill="${M.R1}" stroke="black" stroke-width="10"/>
+  <path d="M 195 130 L 195 105 Q 215 92 255 92 L 290 92 L 290 130 Z" fill="${M.R1}" stroke="black" stroke-width="10"/>
+  <!-- Ventana locomotora -->
+  <rect x="220" y="98"  width="55" height="28" rx="6" fill="${M.A1}" stroke="black" stroke-width="8"/>
+  <!-- Vagón 1 -->
+  <rect x="105" y="148" width="85" height="70" rx="8" fill="${M.B1}" stroke="black" stroke-width="9"/>
+  <rect x="118" y="158" width="28" height="28" rx="4" fill="white" stroke="black" stroke-width="7"/>
+  <rect x="152" y="158" width="28" height="28" rx="4" fill="white" stroke="black" stroke-width="7"/>
+  <!-- Vagón 2 -->
+  <rect x="15"  y="148" width="85" height="70" rx="8" fill="${M.V1}" stroke="black" stroke-width="9"/>
+  <rect x="28"  y="158" width="28" height="28" rx="4" fill="white" stroke="black" stroke-width="7"/>
+  <rect x="62"  y="158" width="28" height="28" rx="4" fill="white" stroke="black" stroke-width="7"/>
+  <!-- Enganches -->
+  <line x1="100" y1="183" x2="105" y2="183" stroke="black" stroke-width="8" stroke-linecap="round"/>
+  <line x1="190" y1="183" x2="195" y2="183" stroke="black" stroke-width="8" stroke-linecap="round"/>
+  <!-- Ruedas locomotora -->
+  <circle cx="222" cy="232" r="24" fill="${M.G2}" stroke="black" stroke-width="9"/>
+  <circle cx="222" cy="232" r="10" fill="white" stroke="black" stroke-width="7"/>
+  <circle cx="268" cy="232" r="24" fill="${M.G2}" stroke="black" stroke-width="9"/>
+  <circle cx="268" cy="232" r="10" fill="white" stroke="black" stroke-width="7"/>
+  <!-- Ruedas vagones -->
+  <circle cx="130" cy="232" r="20" fill="${M.G2}" stroke="black" stroke-width="9"/>
+  <circle cx="130" cy="232" r="8"  fill="white" stroke="black" stroke-width="7"/>
+  <circle cx="168" cy="232" r="20" fill="${M.G2}" stroke="black" stroke-width="9"/>
+  <circle cx="168" cy="232" r="8"  fill="white" stroke="black" stroke-width="7"/>
+  <circle cx="38"  cy="232" r="20" fill="${M.G2}" stroke="black" stroke-width="9"/>
+  <circle cx="38"  cy="232" r="8"  fill="white" stroke="black" stroke-width="7"/>
+  <circle cx="78"  cy="232" r="20" fill="${M.G2}" stroke="black" stroke-width="9"/>
+  <circle cx="78"  cy="232" r="8"  fill="white" stroke="black" stroke-width="7"/>
+</svg>`,
+  },
+
+  // ─── 18. CORAZÓN ──────────────────────────────────────────────────────────
+  {
+    id: "corazon",
+    titulo: "El corazón",
+    frase: "¡Pinta el corazón con amor!",
+    zonas: [
+      { id: "corazon_ext", nombre: "Corazón grande",  marcador: M.R1 },
+      { id: "corazon_med", nombre: "Corazón mediano", marcador: M.R2 },
+      { id: "corazon_int", nombre: "Corazón pequeño", marcador: M.A1 },
+      { id: "destellos",   nombre: "Destellos",       marcador: M.A3 },
+    ],
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="white"/>
+  <!-- Destellos -->
+  <polygon points="38,45  43,62  60,62  47,73  52,90  38,79  24,90  29,73  16,62  33,62"  fill="${M.A3}" stroke="black" stroke-width="6"/>
+  <polygon points="262,45 267,62 284,62 271,73 276,90 262,79 248,90 253,73 240,62 257,62" fill="${M.A3}" stroke="black" stroke-width="6"/>
+  <polygon points="150,18 153,27 163,27 155,33 158,42 150,36 142,42 145,33 137,27 147,27" fill="${M.A3}" stroke="black" stroke-width="6"/>
+  <!-- Corazón exterior -->
+  <path d="M 150 255 C 70 200 22 155 22 102 C 22 62 50 35 88 35 C 110 35 132 47 150 68 C 168 47 190 35 212 35 C 250 35 278 62 278 102 C 278 155 230 200 150 255 Z" fill="${M.R1}" stroke="black" stroke-width="10"/>
+  <!-- Corazón mediano -->
+  <path d="M 150 218 C 92 177 58 148 58 112 C 58 88 74 72 96 72 C 112 72 128 81 150 100 C 172 81 188 72 204 72 C 226 72 242 88 242 112 C 242 148 208 177 150 218 Z" fill="${M.R2}" stroke="black" stroke-width="9"/>
+  <!-- Corazón interior -->
+  <path d="M 150 182 C 110 156 90 136 90 118 C 90 104 100 95 114 95 C 126 95 138 103 150 116 C 162 103 174 95 186 95 C 200 95 210 104 210 118 C 210 136 190 156 150 182 Z" fill="${M.A1}" stroke="black" stroke-width="8"/>
+</svg>`,
+  },
+
+  // ─── 19. GATO ─────────────────────────────────────────────────────────────
   {
     id: "gato",
     titulo: "El gato",
-    frase: "¡Pinta el gatito!",
+    frase: "¡Pinta al gatito!",
+    zonas: [
+      { id: "cuerpo",  nombre: "Cuerpo",   marcador: M.O1 },
+      { id: "barriga", nombre: "Barriga",  marcador: M.A1 },
+      { id: "cabeza",  nombre: "Cabeza",   marcador: M.O1 },
+      { id: "orejas",  nombre: "Orejas",   marcador: M.R1 },
+      { id: "cola",    nombre: "Cola",     marcador: M.O2 },
+    ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <ellipse cx="150" cy="185" rx="85" ry="75" fill="white" stroke="black" stroke-width="10"/>
-  <circle cx="150" cy="105" r="60" fill="white" stroke="black" stroke-width="10"/>
-  <polygon points="98,55 78,10 120,48" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <polygon points="202,55 222,10 180,48" fill="white" stroke="black" stroke-width="10" stroke-linejoin="round"/>
-  <circle cx="125" cy="100" r="10" fill="black"/>
-  <circle cx="175" cy="100" r="10" fill="black"/>
-  <path d="M 135 118 Q 150 128 165 118" fill="none" stroke="black" stroke-width="7" stroke-linecap="round"/>
-  <line x1="90" y1="108" x2="50" y2="100" stroke="black" stroke-width="6" stroke-linecap="round"/>
-  <line x1="90" y1="115" x2="48" y2="115" stroke="black" stroke-width="6" stroke-linecap="round"/>
-  <line x1="210" y1="108" x2="250" y2="100" stroke="black" stroke-width="6" stroke-linecap="round"/>
-  <line x1="210" y1="115" x2="252" y2="115" stroke="black" stroke-width="6" stroke-linecap="round"/>
-  <path d="M 95 245 Q 95 270 115 270 Q 130 270 130 255 L 130 245" fill="white" stroke="black" stroke-width="10" stroke-linecap="round"/>
-  <path d="M 205 245 Q 205 270 185 270 Q 170 270 170 255 L 170 245" fill="white" stroke="black" stroke-width="10" stroke-linecap="round"/>
+  <!-- Cola -->
+  <path d="M 215 235 Q 270 215 275 170 Q 278 135 255 130 Q 240 128 238 148 Q 245 158 240 170 Q 228 190 215 200" fill="${M.O2}" stroke="black" stroke-width="10" stroke-linecap="round"/>
+  <!-- Cuerpo -->
+  <ellipse cx="148" cy="205" rx="88" ry="72" fill="${M.O1}" stroke="black" stroke-width="10"/>
+  <!-- Barriga -->
+  <ellipse cx="148" cy="215" rx="52" ry="46" fill="${M.A1}" stroke="black" stroke-width="8"/>
+  <!-- Cabeza -->
+  <circle cx="148" cy="108" r="65" fill="${M.O1}" stroke="black" stroke-width="10"/>
+  <!-- Orejas -->
+  <polygon points="95,58  78,18  122,52"  fill="${M.R1}" stroke="black" stroke-width="9"/>
+  <polygon points="201,58 222,18 178,52"  fill="${M.R1}" stroke="black" stroke-width="9"/>
+  <!-- Cara -->
+  <circle cx="125" cy="100" r="11" fill="black"/>
+  <circle cx="171" cy="100" r="11" fill="black"/>
+  <circle cx="128" cy="97"  r="4"  fill="white"/>
+  <circle cx="174" cy="97"  r="4"  fill="white"/>
+  <ellipse cx="148" cy="122" rx="14" ry="10" fill="${M.R1}" stroke="black" stroke-width="7"/>
+  <path d="M 130 130 Q 148 142 166 130" fill="none" stroke="black" stroke-width="7" stroke-linecap="round"/>
+  <!-- Bigotes -->
+  <line x1="92"  y1="112" x2="130" y2="118" stroke="black" stroke-width="5" stroke-linecap="round"/>
+  <line x1="90"  y1="122" x2="130" y2="122" stroke="black" stroke-width="5" stroke-linecap="round"/>
+  <line x1="166" y1="118" x2="205" y2="112" stroke="black" stroke-width="5" stroke-linecap="round"/>
+  <line x1="166" y1="122" x2="206" y2="122" stroke="black" stroke-width="5" stroke-linecap="round"/>
+  <!-- Patas -->
+  <rect x="88"  y="262" width="38" height="30" rx="15" fill="${M.O1}" stroke="black" stroke-width="9"/>
+  <rect x="172" y="262" width="38" height="30" rx="15" fill="${M.O1}" stroke="black" stroke-width="9"/>
 </svg>`,
   },
+
+  // ─── 20. BARCO ────────────────────────────────────────────────────────────
   {
-    id: "perro",
-    titulo: "El perro",
-    frase: "¡Pinta el perrito!",
+    id: "barco",
+    titulo: "El barco",
+    frase: "¡Pinta el barco pirata!",
+    zonas: [
+      { id: "casco",    nombre: "Casco",    marcador: M.O2 },
+      { id: "vela1",    nombre: "Vela grande", marcador: M.G1 },
+      { id: "vela2",    nombre: "Vela pequeña",marcador: M.G2 },
+      { id: "bandera",  nombre: "Bandera",  marcador: M.R1 },
+      { id: "mar",      nombre: "Mar",      marcador: M.B1 },
+    ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <ellipse cx="150" cy="195" rx="90" ry="70" fill="white" stroke="black" stroke-width="10"/>
-  <circle cx="150" cy="110" r="58" fill="white" stroke="black" stroke-width="10"/>
-  <ellipse cx="100" cy="75" rx="22" ry="38" fill="white" stroke="black" stroke-width="10" transform="rotate(-15 100 75)"/>
-  <ellipse cx="200" cy="75" rx="22" ry="38" fill="white" stroke="black" stroke-width="10" transform="rotate(15 200 75)"/>
-  <circle cx="128" cy="105" r="10" fill="black"/>
-  <circle cx="172" cy="105" r="10" fill="black"/>
-  <ellipse cx="150" cy="128" rx="20" ry="14" fill="white" stroke="black" stroke-width="8"/>
-  <path d="M 130 140 Q 150 158 170 140" fill="white" stroke="black" stroke-width="7" stroke-linecap="round"/>
-  <rect x="90" y="255" width="28" height="40" rx="8" fill="white" stroke="black" stroke-width="10"/>
-  <rect x="130" y="255" width="28" height="40" rx="8" fill="white" stroke="black" stroke-width="10"/>
-  <rect x="170" y="255" width="28" height="40" rx="8" fill="white" stroke="black" stroke-width="10"/>
-  <path d="M 230 190 Q 265 175 270 200 Q 265 215 230 205" fill="white" stroke="black" stroke-width="8" stroke-linecap="round"/>
+  <!-- Mar con olas -->
+  <path d="M 0 230 Q 38 215 75 230 Q 113 245 150 230 Q 188 215 225 230 Q 263 245 300 230 L 300 300 L 0 300 Z" fill="${M.B1}" stroke="black" stroke-width="9"/>
+  <path d="M 0 250 Q 38 238 75 250 Q 113 262 150 250 Q 188 238 225 250 Q 263 262 300 250" fill="none" stroke="black" stroke-width="6"/>
+  <!-- Casco -->
+  <path d="M 38 195 L 55 248 L 245 248 L 262 195 Z" fill="${M.O2}" stroke="black" stroke-width="10"/>
+  <!-- Línea de flotación -->
+  <line x1="38" y1="222" x2="262" y2="222" stroke="black" stroke-width="7"/>
+  <!-- Mástil -->
+  <line x1="150" y1="195" x2="150" y2="42" stroke="black" stroke-width="10" stroke-linecap="round"/>
+  <!-- Vela grande -->
+  <polygon points="150,48 150,188 62,155" fill="${M.G1}" stroke="black" stroke-width="9"/>
+  <!-- Vela pequeña -->
+  <polygon points="150,48 150,130 220,98" fill="${M.G2}" stroke="black" stroke-width="9"/>
+  <!-- Bandera -->
+  <line x1="150" y1="42" x2="150" y2="22" stroke="black" stroke-width="7"/>
+  <polygon points="150,22 150,38 178,30" fill="${M.R1}" stroke="black" stroke-width="7"/>
+  <!-- Portilla -->
+  <circle cx="95"  cy="210" r="12" fill="white" stroke="black" stroke-width="7"/>
+  <circle cx="205" cy="210" r="12" fill="white" stroke="black" stroke-width="7"/>
+  <!-- Cañón decorativo -->
+  <rect x="60" y="228" width="35" height="14" rx="7" fill="black"/>
 </svg>`,
   },
 ];

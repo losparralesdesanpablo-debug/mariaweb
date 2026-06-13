@@ -3,44 +3,35 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { DIBUJOS } from "@/lib/dibujos";
 
-// ─── Helpers de audio (copiados del prototipo) ────────────────────────────────
+// ─── Audio ────────────────────────────────────────────────────────────────────
 
 let audioCtx: AudioContext | null = null;
 function getAudio(): AudioContext {
   if (!audioCtx)
     audioCtx = new (window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext })
-        .webkitAudioContext)();
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
   if (audioCtx.state === "suspended") audioCtx.resume();
   return audioCtx;
 }
 function pip(frec: number, dur = 0.09, gananciaMax = 0.18, tipo: OscillatorType = "sine") {
   try {
     const a = getAudio();
-    const osc = a.createOscillator();
-    const gan = a.createGain();
-    osc.type = tipo;
-    osc.frequency.value = frec;
+    const osc = a.createOscillator(); const gan = a.createGain();
+    osc.type = tipo; osc.frequency.value = frec;
     gan.gain.setValueAtTime(0, a.currentTime);
     gan.gain.linearRampToValueAtTime(gananciaMax, a.currentTime + 0.015);
     gan.gain.exponentialRampToValueAtTime(0.001, a.currentTime + dur);
-    osc.connect(gan).connect(a.destination);
-    osc.start();
-    osc.stop(a.currentTime + dur + 0.05);
+    osc.connect(gan).connect(a.destination); osc.start(); osc.stop(a.currentTime + dur + 0.05);
   } catch {}
 }
 function fanfarria() {
-  [523, 659, 784, 1047].forEach((f, i) =>
-    setTimeout(() => pip(f, 0.35, 0.22, "triangle"), i * 130)
-  );
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => pip(f, 0.35, 0.22, "triangle"), i * 130));
 }
 function hablar(texto: string) {
   if (!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(texto);
-  u.lang = "es-ES";
-  u.rate = 0.85;
-  u.pitch = 1.15;
+  u.lang = "es-ES"; u.rate = 0.85; u.pitch = 1.15;
   speechSynthesis.speak(u);
 }
 
@@ -49,34 +40,35 @@ function hablar(texto: string) {
 interface Particula { x:number;y:number;vx:number;vy:number;r:number;color:string;rot:number;vrot:number;vida:number }
 function lanzarConfeti(canvas: HTMLCanvasElement) {
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
-  canvas.style.width = innerWidth + "px"; canvas.style.height = innerHeight + "px";
+  canvas.width = innerWidth*dpr; canvas.height = innerHeight*dpr;
+  canvas.style.width = innerWidth+"px"; canvas.style.height = innerHeight+"px";
   const cctx = canvas.getContext("2d")!;
-  cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const colores = ["#FF7A6B","#FFC93D","#5BCB77","#6BA8FF","#C792EA"];
+  cctx.setTransform(dpr,0,0,dpr,0,0);
+  const cols = ["#FF7A6B","#FFC93D","#5BCB77","#6BA8FF","#C792EA"];
   const ps: Particula[] = Array.from({length:130},()=>({
-    x: innerWidth/2+(Math.random()-.5)*240, y: innerHeight*.4,
+    x:innerWidth/2+(Math.random()-.5)*240, y:innerHeight*.4,
     vx:(Math.random()-.5)*14, vy:-Math.random()*16-5,
-    r:Math.random()*8+5, color:colores[Math.floor(Math.random()*colores.length)],
+    r:Math.random()*8+5, color:cols[Math.floor(Math.random()*cols.length)],
     rot:Math.random()*Math.PI, vrot:(Math.random()-.5)*.3, vida:1
   }));
-  function animar() {
-    cctx.clearRect(0,0,innerWidth,innerHeight);
-    let vivas=false;
-    for(const p of ps){
-      p.vy+=.45;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vrot;p.vida-=.007;
-      if(p.vida>0&&p.y<innerHeight+30){vivas=true;cctx.save();cctx.translate(p.x,p.y);cctx.rotate(p.rot);cctx.globalAlpha=Math.max(p.vida,0);cctx.fillStyle=p.color;cctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6);cctx.restore();}
-    }
-    if(vivas) requestAnimationFrame(animar); else cctx.clearRect(0,0,innerWidth,innerHeight);
+  function anim() {
+    cctx.clearRect(0,0,innerWidth,innerHeight); let vivas=false;
+    for(const p of ps){p.vy+=.45;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vrot;p.vida-=.007;
+      if(p.vida>0&&p.y<innerHeight+30){vivas=true;cctx.save();cctx.translate(p.x,p.y);cctx.rotate(p.rot);cctx.globalAlpha=Math.max(p.vida,0);cctx.fillStyle=p.color;cctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6);cctx.restore();}}
+    if(vivas) requestAnimationFrame(anim); else cctx.clearRect(0,0,innerWidth,innerHeight);
   }
-  animar();
+  anim();
 }
 
-// ─── Flood fill BFS con Uint32Array ──────────────────────────────────────────
+// ─── Flood fill BFS ───────────────────────────────────────────────────────────
 
-function hexToRgba(hex: string): [number, number, number, number] {
-  const n = parseInt(hex.replace("#", ""), 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255, 255];
+function hexToComponents(hex: string): [number,number,number] {
+  const n = parseInt(hex.replace("#",""), 16);
+  return [(n>>16)&255, (n>>8)&255, n&255];
+}
+
+function colorMatch(data: Uint8ClampedArray, i: number, r: number, g: number, b: number, tol=30): boolean {
+  return Math.abs(data[i]-r)<=tol && Math.abs(data[i+1]-g)<=tol && Math.abs(data[i+2]-b)<=tol;
 }
 
 function floodFill(
@@ -84,42 +76,70 @@ function floodFill(
   px: number, py: number,
   colorHex: string,
   w: number, h: number
-) {
-  const imageData = ctx.getImageData(0, 0, w, h);
+): string | null {
+  // Devuelve el color marcador del píxel tocado (para identificar zona)
+  const imageData = ctx.getImageData(0,0,w,h);
   const data = imageData.data;
+
+  const startIdx = (py*w+px)*4;
+  const tr=data[startIdx], tg=data[startIdx+1], tb=data[startIdx+2];
+
+  // No rellenar líneas negras ni píxeles ya muy oscuros
+  if (tr<60 && tg<60 && tb<60) return null;
+
+  // Guardar el color marcador del punto de inicio para identificar la zona
+  const marcadorTocado = `rgb(${tr},${tg},${tb})`;
+
+  const [nr,ng,nb] = hexToComponents(colorHex);
+
+  // Si el píxel ya tiene exactamente el color elegido, no hacer nada
+  if (tr===nr && tg===ng && tb===nb) return null;
+
   const buf32 = new Uint32Array(data.buffer);
+  // little-endian ABGR
+  const newColor = (255<<24) | (nb<<16) | (ng<<8) | nr;
 
-  const [nr, ng, nb, na] = hexToRgba(colorHex);
-  // little-endian: ABGR en el buffer
-  const newColor = (na << 24) | (nb << 16) | (ng << 8) | nr;
+  const stack: number[] = [(py*w+px)];
+  const visited = new Uint8Array(w*h);
 
-  const idx = (py * w + px);
-  const targetColor = buf32[idx];
-
-  // No hacer nada si ya tiene ese color o es negro (línea del dibujo)
-  const tr = data[idx * 4], tg = data[idx * 4 + 1], tb = data[idx * 4 + 2];
-  if (targetColor === newColor) return;
-  if (tr < 60 && tg < 60 && tb < 60) return; // píxel negro = línea, no rellenar
-
-  const stack: number[] = [idx];
   while (stack.length) {
-    const i = stack.pop()!;
-    if (buf32[i] !== targetColor) continue;
-    buf32[i] = newColor;
-    const x = i % w, y = Math.floor(i / w);
-    if (x > 0)     stack.push(i - 1);
-    if (x < w - 1) stack.push(i + 1);
-    if (y > 0)     stack.push(i - w);
-    if (y < h - 1) stack.push(i + w);
+    const idx = stack.pop()!;
+    if (visited[idx]) continue;
+    visited[idx] = 1;
+    const di = idx*4;
+    if (!colorMatch(data, di, tr, tg, tb)) continue;
+    buf32[idx] = newColor;
+    const x=idx%w, y=Math.floor(idx/w);
+    if (x>0)     stack.push(idx-1);
+    if (x<w-1)   stack.push(idx+1);
+    if (y>0)     stack.push(idx-w);
+    if (y<h-1)   stack.push(idx+w);
   }
-  ctx.putImageData(imageData, 0, 0);
+  ctx.putImageData(imageData,0,0);
+  return marcadorTocado;
+}
+
+// Detectar qué zona fue tocada comparando color del píxel con los marcadores del dibujo
+function detectarZona(
+  ctx: CanvasRenderingContext2D,
+  px: number, py: number,
+  zonas: { id:string; marcador:string }[]
+): string | null {
+  const p = ctx.getImageData(px,py,1,1).data;
+  const r=p[0],g=p[1],b=p[2];
+  if (r<60 && g<60 && b<60) return null; // línea negra
+  for (const z of zonas) {
+    const [zr,zg,zb] = hexToComponents(z.marcador);
+    if (Math.abs(r-zr)<=35 && Math.abs(g-zg)<=35 && Math.abs(b-zb)<=35) return z.id;
+  }
+  return null;
 }
 
 // ─── Paleta ───────────────────────────────────────────────────────────────────
 
 const PALETA = [
-  "#FF7A6B", "#FFC93D", "#5BCB77", "#6BA8FF",
-  "#C792EA", "#FF9E44", "#FF6B9E", "#4ECDC4",
+  "#FF4444","#FF9900","#FFD700","#44CC44",
+  "#3399FF","#9966FF","#FF66AA","#44DDCC",
 ];
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -135,58 +155,56 @@ interface ColorearCanvasProps {
 export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearCanvasProps) {
   const canvasRef  = useRef<HTMLCanvasElement>(null);
   const confetiRef = useRef<HTMLCanvasElement>(null);
-  const imgCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const imgCacheRef = useRef<Map<string,HTMLImageElement>>(new Map());
+  const dprRef = useRef(1);
 
   const [dibActual, setDibActual] = useState(0);
   const [colorSel, setColorSel]   = useState(PALETA[0]);
   const [fiesta, setFiesta]       = useState(false);
   const [cargando, setCargando]   = useState(true);
+  // Set de IDs de zonas ya coloreadas
+  const [zonasOk, setZonasOk]     = useState<Set<string>>(new Set());
 
-  const dpr = useRef(window.devicePixelRatio || 1);
+  const dibujo = DIBUJOS[dibActual];
 
   // ── Renderizar SVG en canvas ──────────────────────────────────────────────
 
-  const renderizarDibujo = useCallback((idx: number) => {
+  const renderizarDibujo = useCallback((idx: number, resetZonas = true) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     setCargando(true);
     setFiesta(false);
+    if (resetZonas) setZonasOk(new Set());
 
-    const dibujo = DIBUJOS[idx];
-    // Usar dimensiones CSS (lógicas), no físicas — el ctx ya tiene setTransform(dpr)
-    const w = innerWidth;
-    const h = innerHeight;
+    const dib = DIBUJOS[idx];
+    const dpr = dprRef.current;
+    // Dimensiones lógicas (CSS px)
+    const lw = innerWidth;
+    const lh = innerHeight;
     const ctx = canvas.getContext("2d")!;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Fondo blanco — limpiar todo el espacio lógico
+    // Fondo blanco
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillRect(0, 0, lw, lh);
 
-    // Tamaño del dibujo: cuadrado centrado dejando espacio para barra (96px) y paleta (110px)
-    const areaH = h - 96 - 110;
-    const lado = Math.min(w * 0.85, areaH * 0.95);
-    const ox = (w - lado) / 2;
+    // Área disponible descontando barra (96px) y paleta (110px)
+    const areaH = lh - 96 - 110;
+    const lado  = Math.min(lw * 0.88, areaH * 0.96);
+    const ox = (lw - lado) / 2;
     const oy = 96 + (areaH - lado) / 2;
 
-    const cached = imgCacheRef.current.get(dibujo.id);
-    function dibujarImg(img: HTMLImageElement) {
+    const cached = imgCacheRef.current.get(dib.id);
+    function dibImg(img: HTMLImageElement) {
       ctx.drawImage(img, ox, oy, lado, lado);
       setCargando(false);
     }
+    if (cached) { dibImg(cached); return; }
 
-    if (cached) {
-      dibujarImg(cached);
-      return;
-    }
-
-    const blob = new Blob([dibujo.svg], { type: "image/svg+xml" });
+    const blob = new Blob([dib.svg], { type: "image/svg+xml" });
     const url  = URL.createObjectURL(blob);
     const img  = new Image();
-    img.onload = () => {
-      imgCacheRef.current.set(dibujo.id, img);
-      dibujarImg(img);
-      URL.revokeObjectURL(url);
-    };
+    img.onload = () => { imgCacheRef.current.set(dib.id, img); dibImg(img); URL.revokeObjectURL(url); };
     img.src = url;
   }, []);
 
@@ -195,14 +213,13 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
   const redimensionar = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    dpr.current = window.devicePixelRatio || 1;
-    canvas.width  = innerWidth  * dpr.current;
-    canvas.height = innerHeight * dpr.current;
+    dprRef.current = window.devicePixelRatio || 1;
+    const dpr = dprRef.current;
+    canvas.width  = innerWidth  * dpr;
+    canvas.height = innerHeight * dpr;
     canvas.style.width  = innerWidth  + "px";
     canvas.style.height = innerHeight + "px";
-    const ctx = canvas.getContext("2d")!;
-    ctx.setTransform(dpr.current, 0, 0, dpr.current, 0, 0);
-    renderizarDibujo(dibActual);
+    renderizarDibujo(dibActual, false);
   }, [dibActual, renderizarDibujo]);
 
   useEffect(() => {
@@ -214,15 +231,11 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
   // ── Al cambiar de dibujo ──────────────────────────────────────────────────
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    ctx.setTransform(dpr.current, 0, 0, dpr.current, 0, 0);
-    renderizarDibujo(dibActual);
+    renderizarDibujo(dibActual, true);
     if (voz) hablar(DIBUJOS[dibActual].frase);
   }, [dibActual, renderizarDibujo, voz]);
 
-  // ── Toque en el canvas → flood fill ──────────────────────────────────────
+  // ── Toque → flood fill + detección de zona ────────────────────────────────
 
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     e.preventDefault();
@@ -231,79 +244,88 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
 
     const canvas = canvasRef.current!;
     const rect   = canvas.getBoundingClientRect();
+    // Convertir coordenadas CSS → px físicos del canvas
     const scaleX = canvas.width  / rect.width;
     const scaleY = canvas.height / rect.height;
     const px = Math.floor((e.clientX - rect.left) * scaleX);
     const py = Math.floor((e.clientY - rect.top)  * scaleY);
 
     const ctx = canvas.getContext("2d")!;
-    // Las coordenadas del toque vienen en CSS px → convertir a px físicos del canvas
+
+    // Detectar zona ANTES de rellenar (el marcador aún es visible)
+    const zonaId = detectarZona(ctx, px, py, dibujo.zonas);
+
     floodFill(ctx, px, py, colorSel, canvas.width, canvas.height);
 
-    if (sonido) pip(440 + Math.random() * 200, 0.08, 0.12);
+    if (sonido) pip(440 + Math.random()*200, 0.08, 0.12);
 
-    // Comprobar si queda blanco visible (% píxeles blancos < 15%)
-    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let blancos = 0;
-    for (let i = 0; i < img.data.length; i += 4) {
-      if (img.data[i] > 240 && img.data[i+1] > 240 && img.data[i+2] > 240) blancos++;
+    if (zonaId) {
+      setZonasOk(prev => {
+        const next = new Set(prev);
+        next.add(zonaId);
+        // ¿Todas las zonas están pintadas?
+        if (next.size >= dibujo.zonas.length) {
+          if (sonido) fanfarria();
+          if (voz) hablar("¡Muy bien! ¡Qué bonito ha quedado!");
+          if (confetiRef.current) lanzarConfeti(confetiRef.current);
+          setTimeout(() => setFiesta(true), 400);
+        } else {
+          // Sonido de progreso ligeramente más agudo a medida que avanza
+          if (sonido) pip(500 + (next.size / dibujo.zonas.length) * 300, 0.12, 0.15);
+        }
+        return next;
+      });
     }
-    const pctBlanco = (blancos / (canvas.width * canvas.height)) * 100;
-    if (pctBlanco < 15) {
-      if (sonido) fanfarria();
-      if (voz) hablar("¡Muy bien! ¡Qué bonito ha quedado!");
-      if (confetiRef.current) lanzarConfeti(confetiRef.current);
-      setTimeout(() => setFiesta(true), 400);
-    }
-  }, [colorSel, fiesta, sonido, voz]);
+  }, [colorSel, dibujo, fiesta, sonido, voz]);
 
   // ── Siguiente / repetir ───────────────────────────────────────────────────
 
-  function siguiente() {
-    setDibActual((d) => (d + 1) % DIBUJOS.length);
-  }
-  function repetir() {
-    renderizarDibujo(dibActual);
-    setFiesta(false);
-  }
+  function siguiente() { setDibActual(d => (d+1) % DIBUJOS.length); }
+  function repetir()   { renderizarDibujo(dibActual, true); }
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
+  const totalZonas = dibujo.zonas.length;
+  const zonasCompletadas = zonasOk.size;
+
   return (
     <>
-      {/* Barra superior — z-index alto para estar sobre el canvas */}
+      {/* Barra superior — z-index 20 para estar sobre el canvas */}
       <div
         className="fixed left-0 right-0 flex items-center justify-between px-5 pointer-events-none"
         style={{ top: "env(safe-area-inset-top, 0px)", height: 96, zIndex: 20 }}
       >
-        {/* Botón voz */}
-        <button
-          className="boton pointer-events-auto"
-          aria-label="Escuchar instrucción"
-          onClick={() => { if (voz) hablar(DIBUJOS[dibActual].frase); }}
-        >
+        <button className="boton pointer-events-auto" aria-label="Escuchar" onClick={() => { if(voz) hablar(dibujo.frase); }}>
           🔊
         </button>
 
-        {/* Indicadores de dibujo: muestra hasta 10, paginado de 10 en 10 */}
-        <div className="pointer-events-none flex gap-[10px] flex-wrap justify-center" style={{ maxWidth: "60vw" }}>
-          {DIBUJOS.map((_, i) => (
-            <div
-              key={i}
-              className={`punto ${i < dibActual ? "hecho" : i === dibActual ? "actual" : ""}`}
-              style={{ width: 14, height: 14 }}
-            />
-          ))}
+        {/* Progreso: puntos de zona */}
+        <div className="pointer-events-none flex flex-col items-center gap-1">
+          <div className="flex gap-[8px] flex-wrap justify-center" style={{ maxWidth: "55vw" }}>
+            {DIBUJOS.map((_, i) => (
+              <div key={i} className={`punto ${i<dibActual?"hecho":i===dibActual?"actual":""}`} style={{width:13,height:13}}/>
+            ))}
+          </div>
+          {/* Zonas del dibujo actual */}
+          <div className="flex gap-[6px]">
+            {dibujo.zonas.map(z => (
+              <div key={z.id} style={{
+                width:16, height:16, borderRadius:"50%",
+                background: zonasOk.has(z.id) ? "#5BCB77" : "#fff",
+                border: `3px solid ${zonasOk.has(z.id) ? "#5BCB77" : "#BFE0F2"}`,
+                transition: "all .2s",
+              }}/>
+            ))}
+          </div>
         </div>
 
-        {/* Botones derecha: borrar y volver a trazos */}
         <div className="flex gap-3 pointer-events-auto">
           <button className="boton" aria-label="Borrar" onClick={repetir}>🧽</button>
           <button className="boton" aria-label="Volver a trazos" onClick={onCambiarModo}>✏️</button>
         </div>
       </div>
 
-      {/* Canvas principal — z-index bajo para que la paleta quede encima */}
+      {/* Canvas — z-index 1, debajo de la UI */}
       <canvas
         ref={canvasRef}
         className="fixed inset-0"
@@ -311,59 +333,66 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
         onPointerDown={onPointerDown}
       />
 
-      {/* Spinner de carga */}
+      {/* Spinner */}
       {cargando && (
-        <div className="fixed inset-0 flex items-center justify-center z-10 pointer-events-none">
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none" style={{zIndex:15}}>
           <div className="text-6xl animate-bounce">🎨</div>
         </div>
       )}
 
-      {/* Paleta de colores (parte inferior) — z-index alto para estar sobre el canvas */}
+      {/* Paleta — z-index 20 para capturar toques sobre el canvas */}
       <div
-        className="fixed left-0 right-0 flex justify-center gap-4 px-4"
-        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)", zIndex: 20 }}
+        className="fixed left-0 right-0 flex justify-center gap-3 px-4"
+        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)", zIndex: 20 }}
       >
         {PALETA.map((color) => (
           <button
             key={color}
             aria-label={`Color ${color}`}
-            onClick={() => {
+            onPointerDown={(e) => {
+              e.stopPropagation();
               setColorSel(color);
               if (sonido) pip(660, 0.06, 0.1);
             }}
             style={{
-              width: 62,
-              height: 62,
-              borderRadius: "50%",
+              width: 58, height: 58, borderRadius: "50%",
               background: color,
-              border: colorSel === color ? "5px solid #2A4D69" : "5px solid white",
-              boxShadow: colorSel === color
-                ? "0 4px 0 rgba(42,77,105,.3)"
-                : "0 4px 0 rgba(42,77,105,.14)",
+              border: colorSel===color ? "5px solid #2A4D69" : "5px solid white",
+              boxShadow: colorSel===color ? "0 4px 0 rgba(42,77,105,.3)" : "0 4px 0 rgba(42,77,105,.14)",
               cursor: "pointer",
               transition: "transform .1s, border .1s",
-              transform: colorSel === color ? "scale(1.2)" : "scale(1)",
+              transform: colorSel===color ? "scale(1.22)" : "scale(1)",
               flexShrink: 0,
             }}
           />
         ))}
       </div>
 
+      {/* Indicador de progreso de zonas (texto pequeño para adultos) */}
+      {zonasCompletadas > 0 && zonasCompletadas < totalZonas && (
+        <div
+          className="fixed pointer-events-none"
+          style={{ bottom: 100, right: 20, zIndex: 20, color:"#8AA7BC", fontSize:14 }}
+        >
+          {zonasCompletadas}/{totalZonas} zonas
+        </div>
+      )}
+
       {/* Pantalla de celebración */}
       {fiesta && (
-        <div className="fiesta visible">
+        <div className="fiesta visible" style={{zIndex:25}}>
           <div className="estrellota">🎨</div>
           <h1>¡QUÉ BONITO!</h1>
           <div className="acciones">
             <button className="botonazo repetir" onClick={repetir}>Otra vez</button>
-            <button className="botonazo seguir" onClick={siguiente}>Siguiente</button>
+            <button className="botonazo seguir"  onClick={siguiente}>Siguiente</button>
           </div>
-          <div className="datos-adulto">{DIBUJOS[dibActual].titulo}</div>
+          <div className="datos-adulto">{dibujo.titulo} · {totalZonas} zonas pintadas</div>
         </div>
       )}
 
       {/* Confeti */}
-      <canvas ref={confetiRef} className="fixed inset-0 pointer-events-none z-30" />
+      <canvas ref={confetiRef} className="fixed inset-0 pointer-events-none" style={{zIndex:30}}/>
     </>
   );
 }
