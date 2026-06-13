@@ -13,27 +13,15 @@ export interface Dibujo {
   svg: string; // SVG con rellenos de color marcador en cada zona
 }
 
-// Colores marcadores: sutilmente distintos, lejos del negro de las líneas
-// y del blanco del fondo. Nunca se ven porque los tapamos con el fondo al renderizar...
-// En realidad SÍ se usan para rasterizar el SVG y detectar zonas al tocar.
-// El SVG se renderiza con los marcadores, se lee qué zona tocaste, se flood-fill con el color elegido.
-
+// Colores marcadores: suficientemente distintos entre sí y lejos del negro/blanco
 const M = {
-  // Amarillos/naranjas
   A1: "#FFF0A0", A2: "#FFE070", A3: "#FFCC40",
-  // Verdes
   V1: "#A0FFA0", V2: "#70FF70", V3: "#40FF80",
-  // Azules
   B1: "#A0D0FF", B2: "#70B0FF", B3: "#4090FF",
-  // Rosas/rojos
   R1: "#FFB0C0", R2: "#FF8090", R3: "#FF5060",
-  // Marrones/ocres
   O1: "#F0D090", O2: "#E0B860", O3: "#D0A040",
-  // Lilas
   L1: "#E0B0FF", L2: "#C080FF",
-  // Cianes
   C1: "#A0FFEE", C2: "#60FFD0",
-  // Gris claro
   G1: "#E8E8E8", G2: "#D0D0D0",
 };
 
@@ -44,7 +32,7 @@ export const DIBUJOS: Dibujo[] = [
     titulo: "El sol",
     frase: "¡Pinta el sol bien brillante!",
     zonas: [
-      { id: "circulo", nombre: "Sol", marcador: M.A1 },
+      { id: "circulo", nombre: "Sol",   marcador: M.A1 },
       { id: "rayos",   nombre: "Rayos", marcador: M.A2 },
     ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
@@ -58,7 +46,7 @@ export const DIBUJOS: Dibujo[] = [
   <ellipse cx="150" cy="65"  rx="14" ry="28" fill="${M.A2}" stroke="black" stroke-width="9" transform="rotate(225 150 150)"/>
   <ellipse cx="150" cy="65"  rx="14" ry="28" fill="${M.A2}" stroke="black" stroke-width="9" transform="rotate(270 150 150)"/>
   <ellipse cx="150" cy="65"  rx="14" ry="28" fill="${M.A2}" stroke="black" stroke-width="9" transform="rotate(315 150 150)"/>
-  <!-- Círculo central -->
+  <!-- Círculo central (dibujado encima de los rayos para taparlos) -->
   <circle cx="150" cy="150" r="62" fill="${M.A1}" stroke="black" stroke-width="10"/>
   <!-- Cara -->
   <circle cx="127" cy="140" r="8" fill="black"/>
@@ -67,31 +55,43 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-
-  // ─── 3. ARCOÍRIS ──────────────────────────────────────────────────────────
+  // ─── 2. ARCOÍRIS ──────────────────────────────────────────────────────────
   {
     id: "arcoiris",
     titulo: "El arcoíris",
     frase: "¡Pinta el arcoíris de colores!",
     zonas: [
-      { id: "banda1", nombre: "Rojo",    marcador: M.R1 },
-      { id: "banda2", nombre: "Naranja", marcador: M.A3 },
-      { id: "banda3", nombre: "Amarillo",marcador: M.A1 },
-      { id: "banda4", nombre: "Verde",   marcador: M.V1 },
-      { id: "banda5", nombre: "Azul",    marcador: M.B1 },
+      { id: "banda1",   nombre: "Rojo",     marcador: M.R1 },
+      { id: "banda2",   nombre: "Naranja",  marcador: M.A3 },
+      { id: "banda3",   nombre: "Amarillo", marcador: M.A1 },
+      { id: "banda4",   nombre: "Verde",    marcador: M.V1 },
+      { id: "banda5",   nombre: "Azul",     marcador: M.B1 },
       { id: "nube_izq", nombre: "Nube izquierda", marcador: M.G1 },
       { id: "nube_der", nombre: "Nube derecha",   marcador: M.G2 },
     ],
+    // Las bandas son anillos dibujados como paths de donut para que cada zona sea accesible
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <!-- Bandas del arco (de mayor a menor radio, cortadas por rect inferior) -->
-  <clipPath id="cp"><rect x="0" y="0" width="300" height="210"/></clipPath>
-  <circle cx="150" cy="210" r="148" fill="${M.R1}" stroke="black" stroke-width="9" clip-path="url(#cp)"/>
-  <circle cx="150" cy="210" r="122" fill="${M.A3}" stroke="black" stroke-width="9" clip-path="url(#cp)"/>
-  <circle cx="150" cy="210" r="96"  fill="${M.A1}" stroke="black" stroke-width="9" clip-path="url(#cp)"/>
-  <circle cx="150" cy="210" r="70"  fill="${M.V1}" stroke="black" stroke-width="9" clip-path="url(#cp)"/>
-  <circle cx="150" cy="210" r="44"  fill="${M.B1}" stroke="black" stroke-width="9" clip-path="url(#cp)"/>
+  <!-- Bandas del arco: cada una es un anillo (path con dos arcos) accesible individualmente -->
+  <!-- Banda roja: r148 a r122 -->
+  <path d="M 2,210 A 148,148 0 0,1 298,210 L 274,210 A 124,124 0 0,0 26,210 Z" fill="${M.R1}" stroke="black" stroke-width="6"/>
+  <!-- Banda naranja: r122 a r96 -->
+  <path d="M 26,210 A 124,124 0 0,1 274,210 L 250,210 A 100,100 0 0,0 50,210 Z" fill="${M.A3}" stroke="black" stroke-width="6"/>
+  <!-- Banda amarilla: r96 a r70 -->
+  <path d="M 50,210 A 100,100 0 0,1 250,210 L 226,210 A 76,76 0 0,0 74,210 Z" fill="${M.A1}" stroke="black" stroke-width="6"/>
+  <!-- Banda verde: r70 a r44 -->
+  <path d="M 74,210 A 76,76 0 0,1 226,210 L 202,210 A 52,52 0 0,0 98,210 Z" fill="${M.V1}" stroke="black" stroke-width="6"/>
+  <!-- Banda azul: r44 a r18 -->
+  <path d="M 98,210 A 52,52 0 0,1 202,210 L 178,210 A 28,28 0 0,0 122,210 Z" fill="${M.B1}" stroke="black" stroke-width="6"/>
+  <!-- Tapar parte inferior -->
   <rect x="0" y="210" width="300" height="90" fill="white"/>
+  <!-- Bordes negros encima -->
+  <path d="M 2,210 A 148,148 0 0,1 298,210" fill="none" stroke="black" stroke-width="8"/>
+  <path d="M 26,210 A 124,124 0 0,1 274,210" fill="none" stroke="black" stroke-width="8"/>
+  <path d="M 50,210 A 100,100 0 0,1 250,210" fill="none" stroke="black" stroke-width="8"/>
+  <path d="M 74,210 A 76,76 0 0,1 226,210" fill="none" stroke="black" stroke-width="8"/>
+  <path d="M 98,210 A 52,52 0 0,1 202,210" fill="none" stroke="black" stroke-width="8"/>
+  <path d="M 122,210 A 28,28 0 0,1 178,210" fill="none" stroke="black" stroke-width="8"/>
   <!-- Nubes -->
   <ellipse cx="38"  cy="200" rx="34" ry="24" fill="${M.G1}" stroke="black" stroke-width="8"/>
   <ellipse cx="65"  cy="188" rx="28" ry="22" fill="${M.G1}" stroke="black" stroke-width="8"/>
@@ -102,18 +102,18 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 4. CASA ──────────────────────────────────────────────────────────────
+  // ─── 3. CASA ──────────────────────────────────────────────────────────────
   {
     id: "casa",
     titulo: "La casa",
     frase: "¡Pinta la casita con sus colores!",
     zonas: [
-      { id: "tejado",  nombre: "Tejado",  marcador: M.R1 },
-      { id: "pared",   nombre: "Pared",   marcador: M.A1 },
-      { id: "puerta",  nombre: "Puerta",  marcador: M.O1 },
-      { id: "ventana1",nombre: "Ventana izquierda", marcador: M.B1 },
-      { id: "ventana2",nombre: "Ventana derecha",   marcador: M.B2 },
-      { id: "cesped",  nombre: "Césped",  marcador: M.V1 },
+      { id: "tejado",   nombre: "Tejado",   marcador: M.R1 },
+      { id: "pared",    nombre: "Pared",    marcador: M.A1 },
+      { id: "puerta",   nombre: "Puerta",   marcador: M.O1 },
+      { id: "ventana1", nombre: "Ventana izquierda", marcador: M.B1 },
+      { id: "ventana2", nombre: "Ventana derecha",   marcador: M.B2 },
+      { id: "cesped",   nombre: "Césped",   marcador: M.V1 },
     ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
@@ -121,7 +121,7 @@ export const DIBUJOS: Dibujo[] = [
   <rect x="50" y="148" width="200" height="120" fill="${M.A1}" stroke="black" stroke-width="9"/>
   <polygon points="150,28 265,148 35,148" fill="${M.R1}" stroke="black" stroke-width="10"/>
   <rect x="118" y="205" width="64" height="63" fill="${M.O1}" stroke="black" stroke-width="9"/>
-  <rect x="62"  cy="168" x="62"  y="168" width="50" height="46" fill="${M.B1}" stroke="black" stroke-width="9"/>
+  <rect x="62"  y="168" width="50" height="46" fill="${M.B1}" stroke="black" stroke-width="9"/>
   <rect x="188" y="168" width="50" height="46" fill="${M.B2}" stroke="black" stroke-width="9"/>
   <line x1="87"  y1="168" x2="87"  y2="214" stroke="black" stroke-width="6"/>
   <line x1="62"  y1="191" x2="112" y2="191" stroke="black" stroke-width="6"/>
@@ -130,7 +130,7 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 5. MARIPOSA ──────────────────────────────────────────────────────────
+  // ─── 4. MARIPOSA ──────────────────────────────────────────────────────────
   {
     id: "mariposa",
     titulo: "La mariposa",
@@ -148,12 +148,12 @@ export const DIBUJOS: Dibujo[] = [
   <ellipse cx="212" cy="115" rx="78" ry="58" fill="${M.A1}" stroke="black" stroke-width="10"/>
   <ellipse cx="88"  cy="200" rx="54" ry="40" fill="${M.V1}" stroke="black" stroke-width="10"/>
   <ellipse cx="212" cy="200" rx="54" ry="40" fill="${M.B1}" stroke="black" stroke-width="10"/>
-  <!-- Motivos interiores alas -->
+  <!-- Motivos interiores alas (blanco sólido, no zona) -->
   <circle cx="88"  cy="110" r="22" fill="white" stroke="black" stroke-width="7"/>
   <circle cx="212" cy="110" r="22" fill="white" stroke="black" stroke-width="7"/>
   <circle cx="88"  cy="200" r="15" fill="white" stroke="black" stroke-width="7"/>
   <circle cx="212" cy="200" r="15" fill="white" stroke="black" stroke-width="7"/>
-  <!-- Cuerpo -->
+  <!-- Cuerpo encima de todo -->
   <ellipse cx="150" cy="155" rx="13" ry="60" fill="${M.O1}" stroke="black" stroke-width="10"/>
   <!-- Antenas -->
   <path d="M 144 96 Q 128 65 118 50" fill="none" stroke="black" stroke-width="7" stroke-linecap="round"/>
@@ -163,27 +163,27 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 6. PÁJARO ────────────────────────────────────────────────────────────
+  // ─── 5. PÁJARO ────────────────────────────────────────────────────────────
   {
     id: "pajaro",
     titulo: "El pájaro",
     frase: "¡Pinta el pajarito cantarín!",
     zonas: [
-      { id: "cuerpo",  nombre: "Cuerpo",  marcador: M.B1 },
-      { id: "ala",     nombre: "Ala",     marcador: M.B2 },
-      { id: "pecho",   nombre: "Pecho",   marcador: M.R1 },
-      { id: "pico",    nombre: "Pico",    marcador: M.A3 },
-      { id: "rama",    nombre: "Rama",    marcador: M.O2 },
+      { id: "cuerpo", nombre: "Cuerpo", marcador: M.B1 },
+      { id: "ala",    nombre: "Ala",    marcador: M.B2 },
+      { id: "pecho",  nombre: "Pecho",  marcador: M.R1 },
+      { id: "pico",   nombre: "Pico",   marcador: M.A3 },
+      { id: "rama",   nombre: "Rama",   marcador: M.O2 },
     ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
   <rect x="40" y="225" width="220" height="22" rx="11" fill="${M.O2}" stroke="black" stroke-width="9"/>
+  <!-- Ala debajo del cuerpo -->
+  <ellipse cx="120" cy="155" rx="40" ry="28" fill="${M.B2}" stroke="black" stroke-width="9" transform="rotate(-20 120 155)"/>
   <!-- Cuerpo -->
   <ellipse cx="155" cy="165" rx="72" ry="55" fill="${M.B1}" stroke="black" stroke-width="10"/>
-  <!-- Pecho -->
+  <!-- Pecho encima -->
   <ellipse cx="175" cy="185" rx="38" ry="30" fill="${M.R1}" stroke="black" stroke-width="9"/>
-  <!-- Ala -->
-  <ellipse cx="120" cy="155" rx="40" ry="28" fill="${M.B2}" stroke="black" stroke-width="9" transform="rotate(-20 120 155)"/>
   <!-- Cabeza -->
   <circle cx="205" cy="130" r="38" fill="${M.B1}" stroke="black" stroke-width="10"/>
   <!-- Pico -->
@@ -197,34 +197,34 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 7. PEZ ───────────────────────────────────────────────────────────────
+  // ─── 6. PEZ ───────────────────────────────────────────────────────────────
   {
     id: "pez",
     titulo: "El pez",
     frase: "¡Pinta el pez del mar!",
     zonas: [
-      { id: "cuerpo",  nombre: "Cuerpo",  marcador: M.B1 },
-      { id: "aleta_d", nombre: "Aleta dorsal",  marcador: M.B2 },
-      { id: "cola",    nombre: "Cola",    marcador: M.V1 },
-      { id: "barriga", nombre: "Barriga", marcador: M.A1 },
+      { id: "cuerpo",  nombre: "Cuerpo",       marcador: M.B1 },
+      { id: "aleta_d", nombre: "Aleta dorsal", marcador: M.B2 },
+      { id: "cola",    nombre: "Cola",         marcador: M.V1 },
+      { id: "barriga", nombre: "Barriga",      marcador: M.A1 },
     ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
   <!-- Cola -->
   <polygon points="240,150 285,105 285,195" fill="${M.V1}" stroke="black" stroke-width="10"/>
+  <!-- Aleta dorsal (encima pero tapada por cuerpo en su base) -->
+  <path d="M 80 80 Q 120 60 170 78" fill="${M.B2}" stroke="black" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M 80 80 L 80 105 Q 120 95 170 105 L 170 78" fill="${M.B2}" stroke="black" stroke-width="9"/>
   <!-- Cuerpo -->
   <ellipse cx="138" cy="150" rx="105" ry="72" fill="${M.B1}" stroke="black" stroke-width="10"/>
   <!-- Barriga -->
   <ellipse cx="138" cy="172" rx="75" ry="38" fill="${M.A1}" stroke="black" stroke-width="8"/>
-  <!-- Aleta dorsal -->
-  <path d="M 80 80 Q 120 60 170 78" fill="${M.B2}" stroke="black" stroke-width="9" stroke-linejoin="round"/>
-  <path d="M 80 80 L 80 105 Q 120 95 170 105 L 170 78" fill="${M.B2}" stroke="black" stroke-width="9"/>
-  <!-- Aleta pectoral -->
-  <ellipse cx="110" cy="165" rx="28" ry="18" fill="${M.B2}" stroke="black" stroke-width="8" transform="rotate(20 110 165)"/>
+  <!-- Aleta pectoral (decorativa, no zona) -->
+  <ellipse cx="110" cy="165" rx="28" ry="18" fill="${M.B1}" stroke="black" stroke-width="8" transform="rotate(20 110 165)"/>
   <!-- Ojo -->
   <circle cx="68"  cy="138" r="16" fill="white" stroke="black" stroke-width="8"/>
   <circle cx="71"  cy="138" r="7"  fill="black"/>
-  <!-- Escamas (líneas decorativas) -->
+  <!-- Escamas -->
   <path d="M 120 110 Q 130 100 140 110" fill="none" stroke="black" stroke-width="5"/>
   <path d="M 155 105 Q 165 95  175 105" fill="none" stroke="black" stroke-width="5"/>
   <path d="M 140 130 Q 150 120 160 130" fill="none" stroke="black" stroke-width="5"/>
@@ -232,7 +232,7 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 8. ÁRBOL ─────────────────────────────────────────────────────────────
+  // ─── 7. ÁRBOL ─────────────────────────────────────────────────────────────
   {
     id: "arbol",
     titulo: "El árbol",
@@ -242,34 +242,35 @@ export const DIBUJOS: Dibujo[] = [
       { id: "copa2",  nombre: "Copa del medio",  marcador: M.V2 },
       { id: "copa3",  nombre: "Copa de abajo",   marcador: M.V3 },
       { id: "tronco", nombre: "Tronco",           marcador: M.O2 },
-      { id: "cesped", nombre: "Suelo",            marcador: M.V1 },
+      { id: "cesped", nombre: "Suelo",            marcador: M.A1 },
     ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <rect x="15" y="258" width="270" height="40" fill="${M.V1}" stroke="black" stroke-width="9"/>
+  <!-- Suelo (amarillo, distinto a todos los verdes) -->
+  <rect x="15" y="258" width="270" height="40" fill="${M.A1}" stroke="black" stroke-width="9"/>
   <rect x="128" y="195" width="44" height="68" fill="${M.O2}" stroke="black" stroke-width="10"/>
   <polygon points="150,190 225,260 75,260" fill="${M.V3}" stroke="black" stroke-width="10"/>
   <polygon points="150,140 215,220 85,220"  fill="${M.V2}" stroke="black" stroke-width="10"/>
   <polygon points="150,78  200,165 100,165" fill="${M.V1}" stroke="black" stroke-width="10"/>
-  <!-- Frutos -->
-  <circle cx="138" cy="205" r="9" fill="${M.R1}" stroke="black" stroke-width="6"/>
-  <circle cx="162" cy="215" r="9" fill="${M.R1}" stroke="black" stroke-width="6"/>
-  <circle cx="148" cy="228" r="9" fill="${M.R1}" stroke="black" stroke-width="6"/>
+  <!-- Frutos decorativos (no pintables) -->
+  <circle cx="138" cy="205" r="9" fill="red" stroke="black" stroke-width="6"/>
+  <circle cx="162" cy="215" r="9" fill="red" stroke="black" stroke-width="6"/>
+  <circle cx="148" cy="228" r="9" fill="red" stroke="black" stroke-width="6"/>
 </svg>`,
   },
 
-  // ─── 9. COHETE ────────────────────────────────────────────────────────────
+  // ─── 8. COHETE ────────────────────────────────────────────────────────────
   {
     id: "cohete",
     titulo: "El cohete",
     frase: "¡Pinta el cohete espacial!",
     zonas: [
-      { id: "cuerpo",   nombre: "Cuerpo",    marcador: M.B1 },
-      { id: "nariz",    nombre: "Punta",     marcador: M.R1 },
-      { id: "ventana",  nombre: "Ventana",   marcador: M.A1 },
-      { id: "aleta_izq",nombre: "Aleta izq", marcador: M.V1 },
-      { id: "aleta_der",nombre: "Aleta der", marcador: M.V2 },
-      { id: "fuego",    nombre: "Fuego",     marcador: M.A3 },
+      { id: "cuerpo",    nombre: "Cuerpo",    marcador: M.B1 },
+      { id: "nariz",     nombre: "Punta",     marcador: M.R1 },
+      { id: "ventana",   nombre: "Ventana",   marcador: M.A1 },
+      { id: "aleta_izq", nombre: "Aleta izq", marcador: M.V1 },
+      { id: "aleta_der", nombre: "Aleta der", marcador: M.V2 },
+      { id: "fuego",     nombre: "Fuego",     marcador: M.A3 },
     ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
@@ -282,7 +283,7 @@ export const DIBUJOS: Dibujo[] = [
   <polygon points="212,180 258,235 212,222" fill="${M.V2}" stroke="black" stroke-width="9"/>
   <!-- Cuerpo -->
   <rect x="88" y="100" width="124" height="148" rx="20" fill="${M.B1}" stroke="black" stroke-width="10"/>
-  <!-- Nariz (punta) -->
+  <!-- Nariz encima del cuerpo -->
   <path d="M 88 105 Q 88 30 150 25 Q 212 30 212 105 Z" fill="${M.R1}" stroke="black" stroke-width="10"/>
   <!-- Ventana -->
   <circle cx="150" cy="165" r="32" fill="${M.A1}" stroke="black" stroke-width="10"/>
@@ -290,18 +291,18 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 10. CASTILLO ─────────────────────────────────────────────────────────
+  // ─── 9. CASTILLO ──────────────────────────────────────────────────────────
   {
     id: "castillo",
     titulo: "El castillo",
     frase: "¡Pinta el castillo de cuento!",
     zonas: [
-      { id: "torre_izq",  nombre: "Torre izquierda",  marcador: M.L1 },
-      { id: "torre_der",  nombre: "Torre derecha",    marcador: M.L2 },
-      { id: "pared",      nombre: "Pared central",    marcador: M.G1 },
-      { id: "puerta",     nombre: "Puerta",           marcador: M.O1 },
-      { id: "bandera_izq",nombre: "Bandera izq",      marcador: M.R1 },
-      { id: "bandera_der",nombre: "Bandera der",      marcador: M.B1 },
+      { id: "torre_izq",  nombre: "Torre izquierda", marcador: M.L1 },
+      { id: "torre_der",  nombre: "Torre derecha",   marcador: M.L2 },
+      { id: "pared",      nombre: "Pared central",   marcador: M.G1 },
+      { id: "puerta",     nombre: "Puerta",          marcador: M.O1 },
+      { id: "bandera_izq",nombre: "Bandera izq",     marcador: M.R1 },
+      { id: "bandera_der",nombre: "Bandera der",     marcador: M.B1 },
     ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
@@ -325,7 +326,7 @@ export const DIBUJOS: Dibujo[] = [
   <rect x="194" y="110" width="18" height="24" fill="${M.G1}" stroke="black" stroke-width="8"/>
   <!-- Puerta -->
   <path d="M 118 275 L 118 200 Q 118 172 150 172 Q 182 172 182 200 L 182 275 Z" fill="${M.O1}" stroke="black" stroke-width="9"/>
-  <!-- Ventanas torres -->
+  <!-- Ventanas torres (blanco, no zona) -->
   <rect x="38"  y="130" width="32" height="40" rx="16" fill="white" stroke="black" stroke-width="7"/>
   <rect x="230" y="130" width="32" height="40" rx="16" fill="white" stroke="black" stroke-width="7"/>
   <!-- Banderas -->
@@ -336,19 +337,18 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 11. CAMIÓN ───────────────────────────────────────────────────────────
+  // ─── 10. CAMIÓN ───────────────────────────────────────────────────────────
   {
     id: "camion",
     titulo: "El camión",
     frase: "¡Pinta el camión de colores!",
     zonas: [
-      { id: "cabina",   nombre: "Cabina",   marcador: M.R1 },
-      { id: "caja",     nombre: "Caja",     marcador: M.B1 },
-      { id: "rueda1",   nombre: "Rueda delantera", marcador: M.G2 },
-      { id: "rueda2",   nombre: "Rueda trasera 1", marcador: M.G2 },
-      { id: "rueda3",   nombre: "Rueda trasera 2", marcador: M.G2 },
-      { id: "ventana",  nombre: "Ventana",  marcador: M.A1 },
+      { id: "cabina",  nombre: "Cabina",  marcador: M.R1 },
+      { id: "caja",    nombre: "Caja",    marcador: M.B1 },
+      { id: "ruedas",  nombre: "Ruedas",  marcador: M.G2 },
+      { id: "ventana", nombre: "Ventana", marcador: M.A1 },
     ],
+    // Las tres ruedas son independientes pero todas con mismo marcador (se cuenta una zona)
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
   <!-- Caja de carga -->
@@ -358,7 +358,7 @@ export const DIBUJOS: Dibujo[] = [
   <path d="M 185 140 L 185 108 Q 200 95 240 95 L 280 95 L 280 140 Z" fill="${M.R1}" stroke="black" stroke-width="10"/>
   <!-- Ventana cabina -->
   <path d="M 200 100 L 200 135 L 272 135 L 272 100 Q 252 92 220 92 Z" fill="${M.A1}" stroke="black" stroke-width="8"/>
-  <!-- Ruedas -->
+  <!-- Ruedas (zona única, mismo color) -->
   <circle cx="62"  cy="238" r="32" fill="${M.G2}" stroke="black" stroke-width="10"/>
   <circle cx="62"  cy="238" r="14" fill="white" stroke="black" stroke-width="8"/>
   <circle cx="158" cy="238" r="32" fill="${M.G2}" stroke="black" stroke-width="10"/>
@@ -370,7 +370,7 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 12. DINOSAURIO ───────────────────────────────────────────────────────
+  // ─── 11. DINOSAURIO ───────────────────────────────────────────────────────
   {
     id: "dino",
     titulo: "El dinosaurio",
@@ -383,7 +383,7 @@ export const DIBUJOS: Dibujo[] = [
     ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <!-- Cola -->
+  <!-- Cola (separada del cuerpo por línea negra) -->
   <path d="M 35 195 Q 15 250 40 265 Q 70 270 80 230" fill="${M.V2}" stroke="black" stroke-width="10"/>
   <!-- Púas espalda -->
   <polygon points="80,80  95,45  110,80"  fill="${M.V3}" stroke="black" stroke-width="8"/>
@@ -391,11 +391,11 @@ export const DIBUJOS: Dibujo[] = [
   <polygon points="145,75 162,38 178,75"  fill="${M.V3}" stroke="black" stroke-width="8"/>
   <!-- Cuerpo -->
   <ellipse cx="155" cy="175" rx="110" ry="80" fill="${M.V1}" stroke="black" stroke-width="10"/>
-  <!-- Cabeza -->
+  <!-- Cabeza (mismo color cuerpo, conectada) -->
   <ellipse cx="238" cy="105" rx="55"  ry="42" fill="${M.V1}" stroke="black" stroke-width="10"/>
-  <!-- Cuello -->
+  <!-- Cuello relleno (sin stroke visible, mismo color) -->
   <path d="M 195 135 Q 205 115 220 100" fill="none" stroke="${M.V1}" stroke-width="38"/>
-  <path d="M 195 135 Q 205 115 220 100" fill="none" stroke="black" stroke-width="10" fill="none"/>
+  <path d="M 195 135 Q 205 115 220 100" fill="none" stroke="black" stroke-width="10"/>
   <!-- Barriga -->
   <ellipse cx="145" cy="195" rx="72" ry="48" fill="${M.A1}" stroke="black" stroke-width="8"/>
   <!-- Ojo -->
@@ -410,39 +410,42 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 13. HELADO ───────────────────────────────────────────────────────────
+  // ─── 12. HELADO ───────────────────────────────────────────────────────────
   {
     id: "helado",
     titulo: "El helado",
     frase: "¡Pinta el helado rico!",
     zonas: [
-      { id: "barquillo", nombre: "Barquillo", marcador: M.O1 },
-      { id: "bola1",     nombre: "Bola de abajo", marcador: M.R1 },
-      { id: "bola2",     nombre: "Bola del medio",marcador: M.V1 },
-      { id: "bola3",     nombre: "Bola de arriba",marcador: M.A1 },
-      { id: "topping",   nombre: "Topping",  marcador: M.O2 },
+      { id: "barquillo", nombre: "Barquillo",       marcador: M.O1 },
+      { id: "bola1",     nombre: "Bola de abajo",   marcador: M.R1 },
+      { id: "bola2",     nombre: "Bola del medio",  marcador: M.V1 },
+      { id: "bola3",     nombre: "Bola de arriba",  marcador: M.A1 },
     ],
+    // Bolas dibujadas de abajo a arriba: cada una cubre la parte inferior de la anterior
+    // Se añade borde negro entre ellas para que el flood-fill no se mezcle
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
   <!-- Barquillo -->
-  <polygon points="150,278 98,148 202,148" fill="${M.O1}" stroke="black" stroke-width="10"/>
-  <line x1="150" y1="278" x2="120" y2="200" stroke="black" stroke-width="6"/>
-  <line x1="150" y1="278" x2="150" y2="195" stroke="black" stroke-width="6"/>
-  <line x1="150" y1="278" x2="180" y2="200" stroke="black" stroke-width="6"/>
-  <!-- Bolas -->
-  <circle cx="150" cy="148" r="50" fill="${M.R1}" stroke="black" stroke-width="10"/>
-  <circle cx="150" cy="102" r="46" fill="${M.V1}" stroke="black" stroke-width="10"/>
-  <circle cx="150" cy="60"  r="40" fill="${M.A1}" stroke="black" stroke-width="10"/>
-  <!-- Topping (salsa) -->
-  <path d="M 118 60 Q 110 40 125 32 Q 138 25 145 38 Q 152 25 165 30 Q 178 38 172 55" fill="none" stroke="${M.O2}" stroke-width="12" stroke-linecap="round"/>
+  <polygon points="150,278 98,160 202,160" fill="${M.O1}" stroke="black" stroke-width="10"/>
+  <line x1="150" y1="278" x2="120" y2="210" stroke="black" stroke-width="6"/>
+  <line x1="150" y1="278" x2="150" y2="200" stroke="black" stroke-width="6"/>
+  <line x1="150" y1="278" x2="180" y2="210" stroke="black" stroke-width="6"/>
+  <!-- Bola baja -->
+  <circle cx="150" cy="158" r="46" fill="${M.R1}" stroke="black" stroke-width="10"/>
+  <!-- Bola media encima, con borde negro que la separa -->
+  <circle cx="150" cy="116" r="42" fill="${M.V1}" stroke="black" stroke-width="10"/>
+  <!-- Bola alta encima -->
+  <circle cx="150" cy="78"  r="36" fill="${M.A1}" stroke="black" stroke-width="10"/>
+  <!-- Topping decorativo (no zona) -->
+  <path d="M 124 70 Q 118 55 128 48 Q 138 42 144 52 Q 150 42 160 46 Q 170 52 165 68" fill="none" stroke="#8B4513" stroke-width="10" stroke-linecap="round"/>
   <!-- Virutas -->
-  <circle cx="140" cy="52"  r="5" fill="${M.R1}" stroke="black" stroke-width="4"/>
-  <circle cx="162" cy="58"  r="5" fill="${M.B1}" stroke="black" stroke-width="4"/>
-  <circle cx="150" cy="44"  r="5" fill="${M.V1}" stroke="black" stroke-width="4"/>
+  <circle cx="142" cy="62"  r="5" fill="red"   stroke="black" stroke-width="3"/>
+  <circle cx="160" cy="68"  r="5" fill="#4090FF" stroke="black" stroke-width="3"/>
+  <circle cx="150" cy="52"  r="5" fill="#70FF70" stroke="black" stroke-width="3"/>
 </svg>`,
   },
 
-  // ─── 14. FLOR ─────────────────────────────────────────────────────────────
+  // ─── 13. FLOR ─────────────────────────────────────────────────────────────
   {
     id: "flor",
     titulo: "La flor",
@@ -456,37 +459,43 @@ export const DIBUJOS: Dibujo[] = [
       { id: "centro",  nombre: "Centro",   marcador: M.A3 },
       { id: "tallo",   nombre: "Tallo",    marcador: M.V2 },
     ],
+    // Pétalos como paths individuales separados por líneas negras, no ellipses superpuestas
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
   <!-- Tallo y hojas -->
-  <rect x="141" y="185" width="18" height="95" rx="9" fill="${M.V2}" stroke="black" stroke-width="9"/>
-  <ellipse cx="118" cy="240" rx="28" ry="14" fill="${M.V2}" stroke="black" stroke-width="8" transform="rotate(-35 118 240)"/>
-  <ellipse cx="182" cy="225" rx="28" ry="14" fill="${M.V2}" stroke="black" stroke-width="8" transform="rotate(35 182 225)"/>
-  <!-- Pétalos (5, rotados 72°) -->
-  <ellipse cx="150" cy="90" rx="28" ry="52" fill="${M.R1}" stroke="black" stroke-width="9"/>
-  <ellipse cx="150" cy="90" rx="28" ry="52" fill="${M.A1}" stroke="black" stroke-width="9" transform="rotate(72  150 160)"/>
-  <ellipse cx="150" cy="90" rx="28" ry="52" fill="${M.L1}" stroke="black" stroke-width="9" transform="rotate(144 150 160)"/>
-  <ellipse cx="150" cy="90" rx="28" ry="52" fill="${M.B1}" stroke="black" stroke-width="9" transform="rotate(216 150 160)"/>
-  <ellipse cx="150" cy="90" rx="28" ry="52" fill="${M.V1}" stroke="black" stroke-width="9" transform="rotate(288 150 160)"/>
-  <!-- Centro -->
-  <circle cx="150" cy="160" r="32" fill="${M.A3}" stroke="black" stroke-width="10"/>
+  <rect x="141" y="200" width="18" height="82" rx="9" fill="${M.V2}" stroke="black" stroke-width="9"/>
+  <ellipse cx="118" cy="248" rx="28" ry="14" fill="${M.V2}" stroke="black" stroke-width="8" transform="rotate(-35 118 248)"/>
+  <ellipse cx="182" cy="232" rx="28" ry="14" fill="${M.V2}" stroke="black" stroke-width="8" transform="rotate(35 182 232)"/>
+  <!-- Pétalos como sectores radiales separados — cada uno un path propio -->
+  <!-- pétalo 1 (arriba) -->
+  <ellipse cx="150" cy="110" rx="26" ry="48" fill="${M.R1}" stroke="black" stroke-width="9"/>
+  <!-- pétalo 2 (arriba-der) -->
+  <ellipse cx="150" cy="110" rx="26" ry="48" fill="${M.A1}" stroke="black" stroke-width="9" transform="rotate(72 150 168)"/>
+  <!-- pétalo 3 (abajo-der) -->
+  <ellipse cx="150" cy="110" rx="26" ry="48" fill="${M.L1}" stroke="black" stroke-width="9" transform="rotate(144 150 168)"/>
+  <!-- pétalo 4 (abajo-izq) -->
+  <ellipse cx="150" cy="110" rx="26" ry="48" fill="${M.B1}" stroke="black" stroke-width="9" transform="rotate(216 150 168)"/>
+  <!-- pétalo 5 (arriba-izq) -->
+  <ellipse cx="150" cy="110" rx="26" ry="48" fill="${M.V1}" stroke="black" stroke-width="9" transform="rotate(288 150 168)"/>
+  <!-- Centro encima de todo para separar pétalos visualmente -->
+  <circle cx="150" cy="168" r="36" fill="${M.A3}" stroke="black" stroke-width="10"/>
   <!-- Cara del centro -->
-  <circle cx="140" cy="155" r="5" fill="black"/>
-  <circle cx="160" cy="155" r="5" fill="black"/>
-  <path d="M 138 168 Q 150 178 162 168" fill="none" stroke="black" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="140" cy="163" r="5" fill="black"/>
+  <circle cx="160" cy="163" r="5" fill="black"/>
+  <path d="M 138 176 Q 150 186 162 176" fill="none" stroke="black" stroke-width="6" stroke-linecap="round"/>
 </svg>`,
   },
 
-  // ─── 15. CARACOL ──────────────────────────────────────────────────────────
+  // ─── 14. CARACOL ──────────────────────────────────────────────────────────
   {
     id: "caracol",
     titulo: "El caracol",
     frase: "¡Pinta al caracol con su casa!",
     zonas: [
-      { id: "concha",  nombre: "Concha",   marcador: M.A1 },
-      { id: "espiral", nombre: "Espiral",  marcador: M.O1 },
-      { id: "cuerpo",  nombre: "Cuerpo",   marcador: M.V1 },
+      { id: "concha", nombre: "Concha",  marcador: M.A1 },
+      { id: "cuerpo", nombre: "Cuerpo",  marcador: M.V1 },
     ],
+    // Espiral decorativa sin zonas anidadas (solo 2 zonas sencillas)
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
   <!-- Cuerpo -->
@@ -503,44 +512,44 @@ export const DIBUJOS: Dibujo[] = [
   <circle cx="42" cy="192" r="3" fill="black"/>
   <!-- Boca -->
   <path d="M 45 208 Q 55 215 62 208" fill="none" stroke="black" stroke-width="6" stroke-linecap="round"/>
-  <!-- Concha -->
+  <!-- Concha (solo exterior, sin capas internas) -->
   <circle cx="178" cy="175" r="88" fill="${M.A1}" stroke="black" stroke-width="10"/>
-  <!-- Espiral interior (zonas concéntricas) -->
-  <circle cx="178" cy="175" r="62" fill="${M.O1}" stroke="black" stroke-width="8"/>
-  <circle cx="178" cy="175" r="36" fill="${M.A1}" stroke="black" stroke-width="8"/>
-  <circle cx="178" cy="175" r="14" fill="${M.O1}" stroke="black" stroke-width="7"/>
+  <!-- Espiral decorativa (solo líneas negras, no zonas) -->
+  <circle cx="178" cy="175" r="62" fill="none" stroke="black" stroke-width="7"/>
+  <circle cx="178" cy="175" r="36" fill="none" stroke="black" stroke-width="6"/>
+  <circle cx="178" cy="175" r="14" fill="none" stroke="black" stroke-width="5"/>
 </svg>`,
   },
 
-  // ─── 16. BALLENA ──────────────────────────────────────────────────────────
+  // ─── 15. BALLENA ──────────────────────────────────────────────────────────
   {
     id: "ballena",
     titulo: "La ballena",
     frase: "¡Pinta la ballena del océano!",
     zonas: [
-      { id: "cuerpo",  nombre: "Cuerpo",   marcador: M.B1 },
-      { id: "barriga", nombre: "Barriga",  marcador: M.G1 },
-      { id: "aleta_d", nombre: "Aleta dorsal", marcador: M.B2 },
-      { id: "cola",    nombre: "Cola",     marcador: M.B2 },
-      { id: "chorro",  nombre: "Chorro",   marcador: M.C1 },
+      { id: "cuerpo",  nombre: "Cuerpo",       marcador: M.B1 },
+      { id: "barriga", nombre: "Barriga",       marcador: M.G1 },
+      { id: "aleta_d", nombre: "Aleta dorsal",  marcador: M.B2 },
+      { id: "cola",    nombre: "Cola",          marcador: M.L1 },
+      { id: "chorro",  nombre: "Chorro",        marcador: M.C1 },
     ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
   <!-- Chorro de agua -->
   <ellipse cx="248" cy="72"  rx="14" ry="32" fill="${M.C1}" stroke="black" stroke-width="8" transform="rotate(-15 248 72)"/>
   <ellipse cx="262" cy="60"  rx="11" ry="26" fill="${M.C1}" stroke="black" stroke-width="8" transform="rotate(10 262 60)"/>
-  <!-- Cola -->
-  <path d="M 28 168 Q 18 128 45 120 Q 55 148 55 168" fill="${M.B2}" stroke="black" stroke-width="10"/>
-  <path d="M 28 168 Q 18 205 45 215 Q 55 188 55 168" fill="${M.B2}" stroke="black" stroke-width="10"/>
+  <!-- Cola (color distinto a aleta) -->
+  <path d="M 28 168 Q 18 128 45 120 Q 55 148 55 168" fill="${M.L1}" stroke="black" stroke-width="10"/>
+  <path d="M 28 168 Q 18 205 45 215 Q 55 188 55 168" fill="${M.L1}" stroke="black" stroke-width="10"/>
   <!-- Cuerpo -->
   <ellipse cx="168" cy="178" rx="130" ry="72" fill="${M.B1}" stroke="black" stroke-width="10"/>
   <!-- Barriga -->
   <ellipse cx="178" cy="205" rx="88"  ry="38" fill="${M.G1}" stroke="black" stroke-width="8"/>
-  <!-- Aleta dorsal -->
+  <!-- Aleta dorsal (color distinto a cola) -->
   <path d="M 175 108 Q 192 70 212 105" fill="${M.B2}" stroke="black" stroke-width="9"/>
   <path d="M 175 108 L 212 105" fill="none" stroke="black" stroke-width="9"/>
-  <!-- Aleta pectoral -->
-  <ellipse cx="192" cy="198" rx="36" ry="20" fill="${M.B2}" stroke="black" stroke-width="8" transform="rotate(25 192 198)"/>
+  <!-- Aleta pectoral (decorativa, mismo color cuerpo) -->
+  <ellipse cx="192" cy="198" rx="36" ry="20" fill="${M.B1}" stroke="black" stroke-width="8" transform="rotate(25 192 198)"/>
   <!-- Ojo -->
   <circle cx="258" cy="162" r="14" fill="white" stroke="black" stroke-width="8"/>
   <circle cx="261" cy="162" r="6"  fill="black"/>
@@ -549,17 +558,17 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 17. TREN ─────────────────────────────────────────────────────────────
+  // ─── 16. TREN ─────────────────────────────────────────────────────────────
   {
     id: "tren",
     titulo: "El tren",
     frase: "¡Pinta el tren chuchú!",
     zonas: [
-      { id: "locomotora", nombre: "Locomotora",  marcador: M.R1 },
-      { id: "vagon1",     nombre: "Vagón 1",     marcador: M.B1 },
-      { id: "vagon2",     nombre: "Vagón 2",     marcador: M.V1 },
-      { id: "ruedas",     nombre: "Ruedas",      marcador: M.G2 },
-      { id: "humo",       nombre: "Humo",        marcador: M.G1 },
+      { id: "locomotora", nombre: "Locomotora", marcador: M.R1 },
+      { id: "vagon1",     nombre: "Vagón 1",    marcador: M.B1 },
+      { id: "vagon2",     nombre: "Vagón 2",    marcador: M.V1 },
+      { id: "ruedas",     nombre: "Ruedas",     marcador: M.G2 },
+      { id: "humo",       nombre: "Humo",       marcador: M.G1 },
     ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
@@ -581,8 +590,8 @@ export const DIBUJOS: Dibujo[] = [
   <!-- Locomotora -->
   <rect x="195" y="130" width="95" height="88" rx="10" fill="${M.R1}" stroke="black" stroke-width="10"/>
   <path d="M 195 130 L 195 105 Q 215 92 255 92 L 290 92 L 290 130 Z" fill="${M.R1}" stroke="black" stroke-width="10"/>
-  <!-- Ventana locomotora -->
-  <rect x="220" y="98"  width="55" height="28" rx="6" fill="${M.A1}" stroke="black" stroke-width="8"/>
+  <!-- Ventana locomotora (blanco, no zona) -->
+  <rect x="220" y="98"  width="55" height="28" rx="6" fill="white" stroke="black" stroke-width="8"/>
   <!-- Vagón 1 -->
   <rect x="105" y="148" width="85" height="70" rx="8" fill="${M.B1}" stroke="black" stroke-width="9"/>
   <rect x="118" y="158" width="28" height="28" rx="4" fill="white" stroke="black" stroke-width="7"/>
@@ -594,12 +603,11 @@ export const DIBUJOS: Dibujo[] = [
   <!-- Enganches -->
   <line x1="100" y1="183" x2="105" y2="183" stroke="black" stroke-width="8" stroke-linecap="round"/>
   <line x1="190" y1="183" x2="195" y2="183" stroke="black" stroke-width="8" stroke-linecap="round"/>
-  <!-- Ruedas locomotora -->
+  <!-- Ruedas (todas G2) -->
   <circle cx="222" cy="232" r="24" fill="${M.G2}" stroke="black" stroke-width="9"/>
   <circle cx="222" cy="232" r="10" fill="white" stroke="black" stroke-width="7"/>
   <circle cx="268" cy="232" r="24" fill="${M.G2}" stroke="black" stroke-width="9"/>
   <circle cx="268" cy="232" r="10" fill="white" stroke="black" stroke-width="7"/>
-  <!-- Ruedas vagones -->
   <circle cx="130" cy="232" r="20" fill="${M.G2}" stroke="black" stroke-width="9"/>
   <circle cx="130" cy="232" r="8"  fill="white" stroke="black" stroke-width="7"/>
   <circle cx="168" cy="232" r="20" fill="${M.G2}" stroke="black" stroke-width="9"/>
@@ -611,7 +619,7 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 18. CORAZÓN ──────────────────────────────────────────────────────────
+  // ─── 17. CORAZÓN ──────────────────────────────────────────────────────────
   {
     id: "corazon",
     titulo: "El corazón",
@@ -620,35 +628,35 @@ export const DIBUJOS: Dibujo[] = [
       { id: "corazon_ext", nombre: "Corazón grande",  marcador: M.R1 },
       { id: "corazon_med", nombre: "Corazón mediano", marcador: M.R2 },
       { id: "corazon_int", nombre: "Corazón pequeño", marcador: M.A1 },
-      { id: "destellos",   nombre: "Destellos",       marcador: M.A3 },
     ],
+    // Corazones anidados: cada path cubre solo su anillo (el siguiente lo tapa)
+    // Se fuerza borde negro grueso entre capas para que el flood-fill se detenga
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
-  <!-- Destellos -->
-  <polygon points="38,45  43,62  60,62  47,73  52,90  38,79  24,90  29,73  16,62  33,62"  fill="${M.A3}" stroke="black" stroke-width="6"/>
-  <polygon points="262,45 267,62 284,62 271,73 276,90 262,79 248,90 253,73 240,62 257,62" fill="${M.A3}" stroke="black" stroke-width="6"/>
-  <polygon points="150,18 153,27 163,27 155,33 158,42 150,36 142,42 145,33 137,27 147,27" fill="${M.A3}" stroke="black" stroke-width="6"/>
   <!-- Corazón exterior -->
   <path d="M 150 255 C 70 200 22 155 22 102 C 22 62 50 35 88 35 C 110 35 132 47 150 68 C 168 47 190 35 212 35 C 250 35 278 62 278 102 C 278 155 230 200 150 255 Z" fill="${M.R1}" stroke="black" stroke-width="10"/>
-  <!-- Corazón mediano -->
+  <!-- Corazón mediano encima -->
   <path d="M 150 218 C 92 177 58 148 58 112 C 58 88 74 72 96 72 C 112 72 128 81 150 100 C 172 81 188 72 204 72 C 226 72 242 88 242 112 C 242 148 208 177 150 218 Z" fill="${M.R2}" stroke="black" stroke-width="9"/>
-  <!-- Corazón interior -->
+  <!-- Corazón interior encima -->
   <path d="M 150 182 C 110 156 90 136 90 118 C 90 104 100 95 114 95 C 126 95 138 103 150 116 C 162 103 174 95 186 95 C 200 95 210 104 210 118 C 210 136 190 156 150 182 Z" fill="${M.A1}" stroke="black" stroke-width="8"/>
+  <!-- Destellos decorativos (no zona) -->
+  <polygon points="38,45  43,58  55,58  46,67  50,80  38,72  26,80  30,67  21,58  33,58"  fill="#FFC93D" stroke="black" stroke-width="5"/>
+  <polygon points="262,45 267,58 279,58 270,67 274,80 262,72 250,80 254,67 245,58 257,58" fill="#FFC93D" stroke="black" stroke-width="5"/>
 </svg>`,
   },
 
-  // ─── 19. GATO ─────────────────────────────────────────────────────────────
+  // ─── 18. GATO ─────────────────────────────────────────────────────────────
   {
     id: "gato",
     titulo: "El gato",
     frase: "¡Pinta al gatito!",
     zonas: [
-      { id: "cuerpo",  nombre: "Cuerpo",   marcador: M.O1 },
-      { id: "barriga", nombre: "Barriga",  marcador: M.A1 },
-      { id: "cabeza",  nombre: "Cabeza",   marcador: M.O1 },
-      { id: "orejas",  nombre: "Orejas",   marcador: M.R1 },
-      { id: "cola",    nombre: "Cola",     marcador: M.O2 },
+      { id: "cuerpo",  nombre: "Cuerpo y cabeza", marcador: M.O1 },
+      { id: "barriga", nombre: "Barriga",         marcador: M.A1 },
+      { id: "orejas",  nombre: "Orejas",          marcador: M.R1 },
+      { id: "cola",    nombre: "Cola",            marcador: M.O2 },
     ],
+    // cuerpo y cabeza son el mismo marcador porque están conectados físicamente
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
   <!-- Cola -->
@@ -657,7 +665,7 @@ export const DIBUJOS: Dibujo[] = [
   <ellipse cx="148" cy="205" rx="88" ry="72" fill="${M.O1}" stroke="black" stroke-width="10"/>
   <!-- Barriga -->
   <ellipse cx="148" cy="215" rx="52" ry="46" fill="${M.A1}" stroke="black" stroke-width="8"/>
-  <!-- Cabeza -->
+  <!-- Cabeza (mismo color cuerpo, está conectada) -->
   <circle cx="148" cy="108" r="65" fill="${M.O1}" stroke="black" stroke-width="10"/>
   <!-- Orejas -->
   <polygon points="95,58  78,18  122,52"  fill="${M.R1}" stroke="black" stroke-width="9"/>
@@ -680,17 +688,17 @@ export const DIBUJOS: Dibujo[] = [
 </svg>`,
   },
 
-  // ─── 20. BARCO ────────────────────────────────────────────────────────────
+  // ─── 19. BARCO ────────────────────────────────────────────────────────────
   {
     id: "barco",
     titulo: "El barco",
     frase: "¡Pinta el barco pirata!",
     zonas: [
-      { id: "casco",    nombre: "Casco",    marcador: M.O2 },
-      { id: "vela1",    nombre: "Vela grande", marcador: M.G1 },
-      { id: "vela2",    nombre: "Vela pequeña",marcador: M.G2 },
-      { id: "bandera",  nombre: "Bandera",  marcador: M.R1 },
-      { id: "mar",      nombre: "Mar",      marcador: M.B1 },
+      { id: "casco",   nombre: "Casco",        marcador: M.O2 },
+      { id: "vela1",   nombre: "Vela grande",  marcador: M.G1 },
+      { id: "vela2",   nombre: "Vela pequeña", marcador: M.G2 },
+      { id: "bandera", nombre: "Bandera",      marcador: M.R1 },
+      { id: "mar",     nombre: "Mar",          marcador: M.B1 },
     ],
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <rect width="300" height="300" fill="white"/>
@@ -710,7 +718,7 @@ export const DIBUJOS: Dibujo[] = [
   <!-- Bandera -->
   <line x1="150" y1="42" x2="150" y2="22" stroke="black" stroke-width="7"/>
   <polygon points="150,22 150,38 178,30" fill="${M.R1}" stroke="black" stroke-width="7"/>
-  <!-- Portilla -->
+  <!-- Portilla (blanco, no zona) -->
   <circle cx="95"  cy="210" r="12" fill="white" stroke="black" stroke-width="7"/>
   <circle cx="205" cy="210" r="12" fill="white" stroke="black" stroke-width="7"/>
   <!-- Cañón decorativo -->
