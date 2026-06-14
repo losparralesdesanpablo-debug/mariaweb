@@ -94,20 +94,16 @@ export default function AventuraCanvas({
           onEntrar={entrarEscena}
         />
       )}
-
-      {/* Juegos — zIndex 10 para tapar el mapa si quedara montado */}
-      <div style={{ display: escena !== "mapa" && celebrando === null ? "block" : "none", position: "fixed", inset: 0, zIndex: 10 }}>
-        {escena === 1  && <Juego01Estrellas {...juegoProps} />}
-        {escena === 2  && <Juego02Nubes     {...juegoProps} />}
-        {escena === 3  && <Juego03Jardin    {...juegoProps} />}
-        {escena === 4  && <Juego04Peces     {...juegoProps} />}
-        {escena === 5  && <Juego05Granja    {...juegoProps} />}
-        {escena === 6  && <Juego06Cocina    {...juegoProps} />}
-        {escena === 7  && <Juego07Bosque    {...juegoProps} />}
-        {escena === 8  && <Juego08Mar       {...juegoProps} />}
-        {escena === 9  && <Juego09Ciudad    {...juegoProps} />}
-        {escena === 10 && <Juego10Casa      {...juegoProps} />}
-      </div>
+      {escena === 1  && <Juego01Estrellas {...juegoProps} />}
+      {escena === 2  && <Juego02Nubes     {...juegoProps} />}
+      {escena === 3  && <Juego03Jardin    {...juegoProps} />}
+      {escena === 4  && <Juego04Peces     {...juegoProps} />}
+      {escena === 5  && <Juego05Granja    {...juegoProps} />}
+      {escena === 6  && <Juego06Cocina    {...juegoProps} />}
+      {escena === 7  && <Juego07Bosque    {...juegoProps} />}
+      {escena === 8  && <Juego08Mar       {...juegoProps} />}
+      {escena === 9  && <Juego09Ciudad    {...juegoProps} />}
+      {escena === 10 && <Juego10Casa      {...juegoProps} />}
 
       {celebrando !== null && (
         <CelebracionEscena
