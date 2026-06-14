@@ -55,7 +55,7 @@ export default function AventuraCanvas({
   const juegoProps = { sonido, voz, onCompletado: completarEscena };
 
   return (
-    <div className="fixed inset-0" style={{ background: "#0A1628", touchAction: "none" }}>
+    <div className="fixed inset-0" style={{ touchAction: "none" }}>
       {/* Botón 🏠 */}
       <button
         className="boton"
