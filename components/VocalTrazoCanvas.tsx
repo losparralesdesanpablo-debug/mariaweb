@@ -151,7 +151,7 @@ interface VocalTrazoProps {
   voz: boolean;
   tolerancia_px: number;
   porcentaje_para_completar: number;
-  onVolver: () => void;
+  onVolver: (completado: boolean) => void;
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -173,6 +173,7 @@ export default function VocalTrazoCanvas({ sonido, voz, tolerancia_px, porcentaj
   const completadoRef= useRef(false);
   const inicioRef    = useRef(0);
   const dprRef       = useRef(1);
+  const algunaVezRef = useRef(false);
 
   const [vocalIdx, setVocalIdx] = useState(0);
   const vocalIdxRef = useRef(0);
@@ -226,6 +227,7 @@ export default function VocalTrazoCanvas({ sonido, voz, tolerancia_px, porcentaj
     }
     if (nuevos > 0) {
       const pct = calcPorcentaje();
+      if (pct >= 50) algunaVezRef.current = true;
       if (pct - ultimoTickRef.current >= 6) {
         ultimoTickRef.current = pct;
         if (sonido) pip(420 + pct * 6, 0.07, 0.1);
@@ -359,7 +361,7 @@ export default function VocalTrazoCanvas({ sonido, voz, tolerancia_px, porcentaj
       {/* Barra superior */}
       <div className="fixed left-0 right-0 flex items-center justify-between px-5 z-10 pointer-events-none"
         style={{top:"env(safe-area-inset-top,0px)",height:90}}>
-        <button className="boton pointer-events-auto" aria-label="Volver al menú" onClick={onVolver}>🏠</button>
+        <button className="boton pointer-events-auto" aria-label="Volver al menú" onClick={() => onVolver(algunaVezRef.current)}>🏠</button>
 
         {/* Indicadores */}
         <div className="pointer-events-none flex gap-[12px]">

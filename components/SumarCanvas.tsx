@@ -6,7 +6,7 @@ import { pip, fanfarria, hablar } from "./aventura/utils";
 interface SumarProps {
   sonido: boolean;
   voz: boolean;
-  onVolver: () => void;
+  onVolver: (completado: boolean) => void;
 }
 
 const EMOJIS = ["🍎","🐥","⭐","🌸","🍭","🎈","🐞","🦋","🍊","🐠"];
@@ -93,7 +93,7 @@ export default function SumarCanvas({ sonido, voz, onVolver }: SumarProps) {
     }}>
       {/* Barra */}
       <div style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", paddingTop:16, flexShrink:0 }}>
-        <button onClick={onVolver} style={{ background:"rgba(255,255,255,.5)", border:"none", fontSize:30, borderRadius:18, width:56, height:56, cursor:"pointer" }}>🏠</button>
+        <button onClick={() => onVolver(racha > 0)} style={{ background:"rgba(255,255,255,.5)", border:"none", fontSize:30, borderRadius:18, width:56, height:56, cursor:"pointer" }}>🏠</button>
         <div style={{ background:"rgba(255,255,255,.75)", borderRadius:24, padding:"10px 24px", fontSize:"clamp(16px,3.5vw,24px)", fontWeight:800, color:"#5a1a30" }}>
           {estado === "correcto" ? "¡Muy bien! 🎉" : "¿Cuántos hay en total?"}
         </div>

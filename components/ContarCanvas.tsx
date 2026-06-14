@@ -23,7 +23,7 @@ const MAX_NUMERO = 5;
 interface ContarJuegoProps {
   sonido: boolean;
   voz: boolean;
-  onVolver: () => void;
+  onVolver: (completado: boolean) => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -125,7 +125,7 @@ export default function ContarCanvas({ sonido, voz, onVolver }: ContarJuegoProps
     >
       {/* Botón volver */}
       <button
-        onClick={onVolver}
+        onClick={() => onVolver(racha > 0)}
         style={{
           position: "fixed", top: 16, left: 16, zIndex: 50,
           background: "rgba(255,255,255,.5)", border: "none",

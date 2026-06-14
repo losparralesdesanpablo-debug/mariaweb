@@ -31,7 +31,7 @@ const TITULOS: Record<number, string> = {
 
 export default function AventuraCanvas({
   sonido, voz, onVolver,
-}: { sonido: boolean; voz: boolean; onVolver: () => void }) {
+}: { sonido: boolean; voz: boolean; onVolver: (completado: boolean) => void }) {
   const [escena, setEscena] = useState<Escena>("mapa");
   const [completadas, setCompletadas] = useState<Set<number>>(new Set());
   const [celebrando, setCelebrando] = useState<number | null>(null);
@@ -59,7 +59,7 @@ export default function AventuraCanvas({
       {/* Botón 🏠 */}
       <button
         className="boton"
-        onClick={onVolver}
+        onClick={() => onVolver(true)}
         style={{
           position: "fixed", top: 16, left: 16, zIndex: 50,
           background: "rgba(255,255,255,.15)", border: "none",

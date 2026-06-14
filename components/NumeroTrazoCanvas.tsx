@@ -179,7 +179,7 @@ function numeroCamino(d: number, ox:number, oy:number, w:number, h:number): Punt
 
 interface NumeroTrazoProps {
   config: ConfiguracionNino;
-  onVolver: () => void;
+  onVolver: (completado: boolean) => void;
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -201,6 +201,7 @@ export default function NumeroTrazoCanvas({ config, onVolver }: NumeroTrazoProps
   const completadoRef= useRef(false);
   const inicioRef    = useRef(0);
   const dprRef       = useRef(1);
+  const algunaVezRef = useRef(false);
 
   const [digitoIdx, setDigitoIdx] = useState(0);
   const digitoIdxRef = useRef(0);
@@ -256,6 +257,7 @@ export default function NumeroTrazoCanvas({ config, onVolver }: NumeroTrazoProps
     }
     if (nuevos > 0) {
       const pct = calcPorcentaje();
+      if (pct >= 50) algunaVezRef.current = true;
       if (pct - ultimoTickRef.current >= 6) {
         ultimoTickRef.current = pct;
         if (config.sonido) pip(420 + pct * 6, 0.07, 0.1);
@@ -395,7 +397,7 @@ export default function NumeroTrazoCanvas({ config, onVolver }: NumeroTrazoProps
       {/* Barra superior */}
       <div className="fixed left-0 right-0 flex items-center justify-between px-5 z-10 pointer-events-none"
         style={{top:"env(safe-area-inset-top,0px)",height:90}}>
-        <button className="boton pointer-events-auto" aria-label="Volver al menú" onClick={onVolver}>🏠</button>
+        <button className="boton pointer-events-auto" aria-label="Volver al menú" onClick={() => onVolver(algunaVezRef.current)}>🏠</button>
 
         {/* Indicadores */}
         <div className="pointer-events-none flex gap-[12px]">

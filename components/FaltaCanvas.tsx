@@ -6,7 +6,7 @@ import { pip, fanfarria, hablar } from "./aventura/utils";
 interface FaltaProps {
   sonido: boolean;
   voz: boolean;
-  onVolver: () => void;
+  onVolver: (completado: boolean) => void;
 }
 
 function aleatorio(min: number, max: number) {
@@ -85,7 +85,7 @@ export default function FaltaCanvas({ sonido, voz, onVolver }: FaltaProps) {
     }}>
       {/* Barra */}
       <div style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", paddingTop:16, flexShrink:0 }}>
-        <button onClick={onVolver} style={{ background:"rgba(255,255,255,.5)", border:"none", fontSize:30, borderRadius:18, width:56, height:56, cursor:"pointer" }}>🏠</button>
+        <button onClick={() => onVolver(racha > 0)} style={{ background:"rgba(255,255,255,.5)", border:"none", fontSize:30, borderRadius:18, width:56, height:56, cursor:"pointer" }}>🏠</button>
         <div style={{ background:"rgba(255,255,255,.75)", borderRadius:24, padding:"10px 24px", fontSize:"clamp(18px,4vw,26px)", fontWeight:800, color:"#1a3a5c" }}>
           ¿Qué número falta? 🔍
         </div>

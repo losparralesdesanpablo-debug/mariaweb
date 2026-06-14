@@ -299,7 +299,7 @@ interface TrazoCanvasProps {
   actividades: Actividad[];
   config: ConfiguracionNino;
   actividadId: (codigo: string) => string;
-  onCambiarModo?: () => void;
+  onCambiarModo?: (completado: boolean) => void;
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -320,6 +320,7 @@ export default function TrazoCanvas({
   const trazoLibreRef = useRef<Punto[][]>([]);
   const dibujandoRef = useRef(false);
   const completadoRef = useRef(false);
+  const algunaVezRef  = useRef(false);
   const metricasRef = useRef<Metricas | null>(null);
   const ultimoTickPctRef = useRef(0);
   const nivelActualRef = useRef(0);
@@ -486,6 +487,7 @@ export default function TrazoCanvas({
       }
       if (nuevos > 0) {
         const pct = calcPorcentaje();
+        if (pct >= 50) algunaVezRef.current = true;
         if (pct - ultimoTickPctRef.current >= 6) {
           ultimoTickPctRef.current = pct;
           if (config.sonido) pip(420 + pct * 6, 0.07, 0.1);
@@ -665,7 +667,7 @@ export default function TrazoCanvas({
             <button
               className="boton"
               aria-label="Ir a colorear"
-              onClick={onCambiarModo}
+              onClick={() => onCambiarModo(algunaVezRef.current)}
             >
               🎨
             </button>

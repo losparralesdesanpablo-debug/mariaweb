@@ -32,9 +32,18 @@ interface ZonaNinaProps {
   videos: VideoPremio[];
 }
 
-function videosAleatorio(videos: VideoPremio[]): VideoPremio | null {
-  if (!videos.length) return null;
-  return videos[Math.floor(Math.random() * videos.length)];
+const VIDEO_FALLBACK: VideoPremio = {
+  id: "fallback",
+  adulto_id: "",
+  youtube_id: "GjeTkWJ3arc",
+  titulo: "¡Premio!",
+  orden: 1,
+  activo: true,
+};
+
+function videosAleatorio(videos: VideoPremio[]): VideoPremio {
+  const lista = videos.length > 0 ? videos : [VIDEO_FALLBACK];
+  return lista[Math.floor(Math.random() * lista.length)];
 }
 
 export default function ZonaNina({ actividades, config, ninoId, ninoNombre, ninoPin, videos }: ZonaNinaProps) {
@@ -46,6 +55,7 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
   });
   const juegosPara = (config.juegos_para_premio ?? CONFIG_DEFAULT.juegos_para_premio) || 5;
   const contadorRef = useRef(0);
+  const [contadorVisible, setContadorVisible] = useState(0);
   const [videoPremio, setVideoPremio] = useState<VideoPremio | null>(null);
 
   useEffect(() => {
@@ -58,10 +68,14 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
   }
 
   // Llamar al completar un juego para incrementar el contador
-  function juegoCompletado() {
-    contadorRef.current += 1;
-    if (videos.length > 0 && contadorRef.current >= juegosPara) {
+  function juegoCompletado(completado: boolean) {
+    if (completado) {
+      contadorRef.current += 1;
+      setContadorVisible(contadorRef.current);
+    }
+    if (contadorRef.current >= juegosPara) {
       contadorRef.current = 0;
+      setContadorVisible(0);
       setVideoPremio(videosAleatorio(videos));
       setModo("video");
     } else {
@@ -94,7 +108,7 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
     );
   }
   if (modo === "menu") {
-    return <MenuInicio onJuego={setModo} />;
+    return <MenuInicio onJuego={setModo} contador={contadorVisible} umbral={juegosPara} onPremio={() => { contadorRef.current = 0; setContadorVisible(0); setVideoPremio(videosAleatorio(videos)); setModo("video"); }} />;
   }
   if (modo === "trazos") {
     return (

@@ -159,7 +159,7 @@ const PALETA = [
 interface ColorearCanvasProps {
   sonido: boolean;
   voz: boolean;
-  onCambiarModo: () => void;
+  onCambiarModo: (completado: boolean) => void;
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -360,7 +360,7 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
         {/* Derecha: botones */}
         <div className="flex gap-2 pointer-events-auto">
           <button className="boton" aria-label="Borrar" onClick={repetir}>🧽</button>
-          <button className="boton" aria-label="Volver al menú" onClick={onCambiarModo}>🏠</button>
+          <button className="boton" aria-label="Volver al menú" onClick={() => onCambiarModo(estrellas > 0)}>🏠</button>
         </div>
       </div>
 

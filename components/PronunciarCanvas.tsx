@@ -98,7 +98,7 @@ declare global {
 interface PronunciarProps {
   sonido: boolean;
   voz: boolean;
-  onVolver: () => void;
+  onVolver: (completado: boolean) => void;
 }
 
 type Estado = "presentando" | "grabando" | "evaluando" | "resultado";
@@ -224,7 +224,7 @@ export default function PronunciarCanvas({ sonido, voz, onVolver }: PronunciarPr
         paddingTop: 16, flexShrink: 0,
       }}>
         <button
-          onClick={onVolver}
+          onClick={() => onVolver(puntuacion > 0)}
           style={{
             background: "rgba(255,255,255,.55)", border: "none",
             fontSize: 30, borderRadius: 18, width: 56, height: 56, cursor: "pointer",

@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 
 interface MenuInicioProps {
   onJuego: (juego: "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues") => void;
+  contador: number;
+  umbral: number;
+  onPremio: () => void;
 }
 
-export default function MenuInicio({ onJuego }: MenuInicioProps) {
+export default function MenuInicio({ onJuego, contador, umbral, onPremio }: MenuInicioProps) {
   const router = useRouter();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -43,6 +46,11 @@ export default function MenuInicio({ onJuego }: MenuInicioProps) {
         }}>
           Caminitos
         </h1>
+      </div>
+
+      {/* Botón premio */}
+      <div style={{ flexShrink: 0, width: "100%", maxWidth: 700 }}>
+        <BotonazoMrPremio contador={contador} umbral={umbral} onPremio={onPremio} />
       </div>
 
       {/* Grid 4 columnas */}
@@ -81,6 +89,80 @@ export default function MenuInicio({ onJuego }: MenuInicioProps) {
         onPointerCancel={cancelarLargo}
       />
     </div>
+  );
+}
+
+function BotonazoMrPremio({ contador, umbral, onPremio }: { contador: number; umbral: number; onPremio: () => void }) {
+  const listo = contador >= umbral;
+  const pct   = Math.min(contador / umbral, 1);
+
+  return (
+    <button
+      onClick={listo ? onPremio : undefined}
+      disabled={!listo}
+      style={{
+        width: "100%",
+        minHeight: "clamp(56px, 10vw, 72px)",
+        border: "none",
+        borderRadius: 20,
+        background: listo
+          ? "linear-gradient(90deg, #FFB800 0%, #FF6B00 100%)"
+          : "rgba(255,255,255,0.45)",
+        boxShadow: listo ? "0 5px 0 #CC6000" : "0 3px 0 rgba(0,0,0,.08)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        cursor: listo ? "pointer" : "default",
+        transition: "all .2s",
+        padding: "0 20px",
+        overflow: "hidden",
+        position: "relative",
+        gap: 12,
+      }}
+    >
+      {/* Barra de progreso de fondo */}
+      {!listo && (
+        <div style={{
+          position: "absolute", inset: 0, left: 0,
+          width: `${pct * 100}%`,
+          background: "linear-gradient(90deg, rgba(255,184,0,.35) 0%, rgba(255,107,0,.25) 100%)",
+          borderRadius: 20,
+          transition: "width .4s",
+          pointerEvents: "none",
+        }} />
+      )}
+
+      <span style={{ fontSize: "clamp(22px, 5vw, 30px)", lineHeight: 1, position: "relative" }}>
+        {listo ? "🎬" : "🎁"}
+      </span>
+
+      <span style={{
+        flex: 1,
+        fontSize: "clamp(12px, 2.5vw, 17px)",
+        fontWeight: 900,
+        color: listo ? "#fff" : "#2A4D69",
+        textAlign: "left",
+        position: "relative",
+      }}>
+        {listo ? "¡Tu premio te espera! Pulsa aquí 🎉" : "Premio"}
+      </span>
+
+      {/* Contador / estrellas */}
+      <div style={{
+        background: listo ? "rgba(255,255,255,.25)" : "rgba(255,255,255,.7)",
+        borderRadius: 14,
+        padding: "4px 12px",
+        fontSize: "clamp(12px, 2.5vw, 16px)",
+        fontWeight: 900,
+        color: listo ? "#fff" : "#2A4D69",
+        whiteSpace: "nowrap",
+        position: "relative",
+      }}>
+        {listo
+          ? "⭐".repeat(Math.min(umbral, 5))
+          : `${contador} / ${umbral} ⭐`}
+      </div>
+    </button>
   );
 }
 
