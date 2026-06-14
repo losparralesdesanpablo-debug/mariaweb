@@ -174,6 +174,8 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
                 value={cfg.tolerancia_px} onChange={v => setCfg(c => ({ ...c, tolerancia_px: v }))} />
               <SliderField label="% para completar" min={50} max={100} unit="%"
                 value={cfg.porcentaje_para_completar} onChange={v => setCfg(c => ({ ...c, porcentaje_para_completar: v }))} />
+              <SliderField label="🎬 Juegos para premio" min={1} max={20} unit=""
+                value={cfg.juegos_para_premio ?? 5} onChange={v => setCfg(c => ({ ...c, juegos_para_premio: v }))} />
             </div>
             <div className="flex gap-6 mt-1">
               <Toggle label="🔊 Sonido" value={cfg.sonido} onChange={v => setCfg(c => ({ ...c, sonido: v }))} />

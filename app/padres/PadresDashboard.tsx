@@ -8,6 +8,8 @@ import PanelUsuarias from "./PanelUsuarias";
 import PanelAdmins from "./PanelAdmins";
 import PanelRendimiento from "./PanelRendimiento";
 import BorrarRegistros from "./BorrarRegistros";
+import PanelVideos from "./PanelVideos";
+import type { VideoPremio } from "@/lib/types";
 
 interface Admin {
   id: string;
@@ -21,18 +23,20 @@ interface PadresDashboardProps {
   ninos: Nino[];
   progreso: ResumenProgreso[];
   admins: Admin[];
+  videos: VideoPremio[];
 }
 
-type Tab = "usuarias" | "admins" | "rendimiento" | "borrar";
+type Tab = "usuarias" | "admins" | "rendimiento" | "borrar" | "videos";
 
 const TABS: { id: Tab; emoji: string; label: string }[] = [
   { id: "usuarias",    emoji: "👧", label: "Usuarias" },
   { id: "admins",      emoji: "👑", label: "Administradores" },
   { id: "rendimiento", emoji: "📊", label: "Rendimiento" },
   { id: "borrar",      emoji: "🗑️", label: "Borrar registros" },
+  { id: "videos",      emoji: "🎬", label: "Vídeos premio" },
 ];
 
-export default function PadresDashboard({ user, ninos, progreso, admins }: PadresDashboardProps) {
+export default function PadresDashboard({ user, ninos, progreso, admins, videos }: PadresDashboardProps) {
   const [tab, setTab] = useState<Tab>("usuarias");
 
   async function handleLogout() {
@@ -106,6 +110,9 @@ export default function PadresDashboard({ user, ninos, progreso, admins }: Padre
         )}
         {tab === "borrar" && (
           <BorrarRegistros ninos={ninos} />
+        )}
+        {tab === "videos" && (
+          <PanelVideos videos={videos} userId={user.id} />
         )}
       </main>
     </div>

@@ -24,6 +24,16 @@ export interface ConfiguracionNino {
   sonido: boolean;
   voz: boolean;
   porcentaje_para_completar: number;
+  juegos_para_premio: number;
+}
+
+export interface VideoPremio {
+  id: string;
+  adulto_id: string;
+  youtube_id: string;
+  titulo: string;
+  orden: number;
+  activo: boolean;
 }
 
 export interface Sesion {
@@ -63,6 +73,7 @@ export const CONFIG_DEFAULT: ConfiguracionNino = {
   sonido: true,
   voz: true,
   porcentaje_para_completar: 85,
+  juegos_para_premio: 5,
 };
 
 export const FRASES_NIVEL: Record<string, string> = {

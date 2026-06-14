@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase-server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import PadresDashboard from "./PadresDashboard";
-import type { Nino, ResumenProgreso } from "@/lib/types";
+import type { Nino, ResumenProgreso, VideoPremio } from "@/lib/types";
 
 export default async function PadresPage() {
   const supabase = await createClient();
@@ -39,7 +39,7 @@ export default async function PadresPage() {
       );
       const { data: usersData } = await adminClient.auth.admin.listUsers({ perPage: 100 });
       admins = (usersData?.users ?? [])
-        .filter(u => u.id !== user.id) // excluir usuario actual (se muestra aparte como "Tú")
+        .filter(u => u.id !== user.id)
         .map(u => ({
           id: u.id,
           email: u.email ?? "",
@@ -51,12 +51,21 @@ export default async function PadresPage() {
     }
   }
 
+  // Vídeos premio del usuario
+  const { data: videosData } = await supabase
+    .from("videos_premio")
+    .select("*")
+    .eq("adulto_id", user.id)
+    .order("orden");
+  const videos = (videosData as VideoPremio[]) ?? [];
+
   return (
     <PadresDashboard
       user={user}
       ninos={(ninos as Nino[]) ?? []}
       progreso={progreso}
       admins={admins}
+      videos={videos}
     />
   );
 }

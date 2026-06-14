@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase-server";
 import ZonaNina from "@/components/ZonaNina";
-import type { Actividad, ConfiguracionNino, Nino } from "@/lib/types";
+import type { Actividad, ConfiguracionNino, Nino, VideoPremio } from "@/lib/types";
 import { CONFIG_DEFAULT } from "@/lib/types";
 
 export default async function HomePage() {
@@ -23,6 +23,7 @@ export default async function HomePage() {
   let ninoId: string | null = null;
   let ninoNombre = "María";
   let ninoPin: string | null = null;
+  let videos: VideoPremio[] = [];
 
   if (user) {
     const { data: ninos } = await supabase
@@ -37,6 +38,15 @@ export default async function HomePage() {
       ninoNombre = nino.nombre;
       ninoPin = nino.pin ?? null;
       config = { ...CONFIG_DEFAULT, ...nino.configuracion };
+
+      // Vídeos premio activos del adulto
+      const { data: vData } = await supabase
+        .from("videos_premio")
+        .select("*")
+        .eq("adulto_id", user.id)
+        .eq("activo", true)
+        .order("orden");
+      videos = (vData as VideoPremio[]) ?? [];
     }
   }
 
@@ -47,6 +57,7 @@ export default async function HomePage() {
       ninoId={ninoId}
       ninoNombre={ninoNombre}
       ninoPin={ninoPin}
+      videos={videos}
     />
   );
 }
