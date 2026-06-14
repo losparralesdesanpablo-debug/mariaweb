@@ -10,11 +10,12 @@ import PuntosCanvas from "./PuntosCanvas";
 import NumeroTrazoCanvas from "./NumeroTrazoCanvas";
 import ContarCanvas from "./ContarCanvas";
 import ReconocerCanvas from "./ReconocerCanvas";
+import PronunciarCanvas from "./PronunciarCanvas";
 import { setNinoId, iniciarReintentoCola } from "@/lib/trazo-store";
 import { VOCALES } from "@/lib/figuras";
 import type { Actividad, ConfiguracionNino } from "@/lib/types";
 
-type Modo = "pin" | "menu" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc";
+type Modo = "pin" | "menu" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar";
 
 interface ZonaNinaProps {
   actividades: Actividad[];
@@ -112,6 +113,15 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
     return (
       <ReconocerCanvas
         modo="vocales"
+        sonido={config.sonido}
+        voz={config.voz}
+        onVolver={() => setModo("menu")}
+      />
+    );
+  }
+  if (modo === "pronunciar") {
+    return (
+      <PronunciarCanvas
         sonido={config.sonido}
         voz={config.voz}
         onVolver={() => setModo("menu")}
