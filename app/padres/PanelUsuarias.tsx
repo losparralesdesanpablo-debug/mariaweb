@@ -19,6 +19,7 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
   const [nombre, setNombre]     = useState("");
   const [fechaNac, setFechaNac] = useState("");
   const [pin, setPin]           = useState("");
+  const [notas, setNotas]       = useState("");
   const [cfg, setCfg]           = useState<ConfiguracionNino>(CONFIG_DEFAULT);
   const [guardando, setGuardando] = useState(false);
   const [msg, setMsg]           = useState("");
@@ -29,6 +30,7 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
     setNombre("");
     setFechaNac("");
     setPin("");
+    setNotas("");
     setCfg(CONFIG_DEFAULT);
     setMsg("");
     setCreando(true);
@@ -39,6 +41,7 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
     setNombre(n.nombre);
     setFechaNac(n.fecha_nacimiento ?? "");
     setPin(n.pin ?? "");
+    setNotas(n.notas ?? "");
     setCfg({ ...CONFIG_DEFAULT, ...n.configuracion });
     setMsg("");
     setEditando(n);
@@ -58,11 +61,12 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
         fecha_nacimiento: fechaNac || null,
         configuracion: cfg,
         pin: pin.trim() || null,
+        notas: notas.trim() || null,
       }).eq("id", editando.id);
       if (error) { setMsg("Error al guardar"); }
       else {
         setNinos(ns => ns.map(n => n.id === editando.id
-          ? { ...n, nombre: nombre.trim(), fecha_nacimiento: fechaNac || null, configuracion: cfg, pin: pin.trim() || null }
+          ? { ...n, nombre: nombre.trim(), fecha_nacimiento: fechaNac || null, configuracion: cfg, pin: pin.trim() || null, notas: notas.trim() || null }
           : n));
         setMsg("¡Guardado!");
         setTimeout(cerrar, 800);
@@ -74,6 +78,7 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
         fecha_nacimiento: fechaNac || null,
         configuracion: cfg,
         pin: pin.trim() || null,
+        notas: notas.trim() || null,
       }).select().single();
       if (error) { setMsg("Error al crear"); }
       else {
@@ -148,6 +153,18 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
             </p>
           </div>
 
+          <div>
+            <label className="campo-label">NOTAS (opcional)</label>
+            <textarea
+              className="campo"
+              rows={3}
+              placeholder="Ej: Le cuesta mantener la atención más de 10 minutos. Prefiere los ejercicios con colores vivos…"
+              value={notas}
+              onChange={e => setNotas(e.target.value)}
+              style={{ resize: "vertical", minHeight: 80 }}
+            />
+          </div>
+
           {/* Ajustes rápidos */}
           <div className="rounded-2xl p-4 flex flex-col gap-3"
             style={{ background: "rgba(234,246,255,0.6)" }}>
@@ -199,6 +216,11 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
                     : "Sin fecha de nacimiento"}
                   {n.pin ? ` · PIN: ${"●".repeat(n.pin.length)}` : " · Sin PIN"}
                 </p>
+                {n.notas && (
+                  <p className="text-sm mt-1 line-clamp-2" style={{ color: "#5A7A96", fontStyle: "italic" }}>
+                    {n.notas}
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex gap-2 flex-shrink-0">

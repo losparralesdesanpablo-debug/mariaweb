@@ -7,6 +7,7 @@ import type { User } from "@supabase/supabase-js";
 import PanelUsuarias from "./PanelUsuarias";
 import PanelAdmins from "./PanelAdmins";
 import PanelRendimiento from "./PanelRendimiento";
+import BorrarRegistros from "./BorrarRegistros";
 
 interface Admin {
   id: string;
@@ -22,12 +23,13 @@ interface PadresDashboardProps {
   admins: Admin[];
 }
 
-type Tab = "usuarias" | "admins" | "rendimiento";
+type Tab = "usuarias" | "admins" | "rendimiento" | "borrar";
 
 const TABS: { id: Tab; emoji: string; label: string }[] = [
   { id: "usuarias",    emoji: "👧", label: "Usuarias" },
   { id: "admins",      emoji: "👑", label: "Administradores" },
   { id: "rendimiento", emoji: "📊", label: "Rendimiento" },
+  { id: "borrar",      emoji: "🗑️", label: "Borrar registros" },
 ];
 
 export default function PadresDashboard({ user, ninos, progreso, admins }: PadresDashboardProps) {
@@ -101,6 +103,9 @@ export default function PadresDashboard({ user, ninos, progreso, admins }: Padre
         )}
         {tab === "rendimiento" && (
           <PanelRendimiento ninos={ninos} progreso={progreso} />
+        )}
+        {tab === "borrar" && (
+          <BorrarRegistros ninos={ninos} />
         )}
       </main>
     </div>

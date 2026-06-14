@@ -6,8 +6,8 @@ import TrazoCanvas from "./TrazoCanvas";
 import ColorearCanvas from "./ColorearCanvas";
 import AventuraCanvas from "./AventuraCanvas";
 import PantallaPIN from "./PantallaPIN";
-import PuntosCanvas from "./PuntosCanvas";
 import NumeroTrazoCanvas from "./NumeroTrazoCanvas";
+import VocalTrazoCanvas from "./VocalTrazoCanvas";
 import ContarCanvas from "./ContarCanvas";
 import ReconocerCanvas from "./ReconocerCanvas";
 import PronunciarCanvas from "./PronunciarCanvas";
@@ -17,7 +17,6 @@ import MasMenosCanvas from "./MasMenosCanvas";
 import SumarCanvas from "./SumarCanvas";
 import AntesDepuesCanvas from "./AntesDepuesCanvas";
 import { setNinoId, iniciarReintentoCola } from "@/lib/trazo-store";
-import { VOCALES } from "@/lib/figuras";
 import type { Actividad, ConfiguracionNino } from "@/lib/types";
 
 type Modo = "pin" | "menu" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues";
@@ -95,11 +94,11 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
   }
   if (modo === "vocales") {
     return (
-      <PuntosCanvas
-        figuras={VOCALES}
-        tipo="vocales"
+      <VocalTrazoCanvas
         sonido={config.sonido}
         voz={config.voz}
+        tolerancia_px={config.tolerancia_px}
+        porcentaje_para_completar={config.porcentaje_para_completar}
         onVolver={() => setModo("menu")}
       />
     );
