@@ -11,11 +11,16 @@ import NumeroTrazoCanvas from "./NumeroTrazoCanvas";
 import ContarCanvas from "./ContarCanvas";
 import ReconocerCanvas from "./ReconocerCanvas";
 import PronunciarCanvas from "./PronunciarCanvas";
+import OrdenarCanvas from "./OrdenarCanvas";
+import FaltaCanvas from "./FaltaCanvas";
+import MasMenosCanvas from "./MasMenosCanvas";
+import SumarCanvas from "./SumarCanvas";
+import AntesDepuesCanvas from "./AntesDepuesCanvas";
 import { setNinoId, iniciarReintentoCola } from "@/lib/trazo-store";
 import { VOCALES } from "@/lib/figuras";
 import type { Actividad, ConfiguracionNino } from "@/lib/types";
 
-type Modo = "pin" | "menu" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar";
+type Modo = "pin" | "menu" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues";
 
 interface ZonaNinaProps {
   actividades: Actividad[];
@@ -118,6 +123,21 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
         onVolver={() => setModo("menu")}
       />
     );
+  }
+  if (modo === "ordenar") {
+    return <OrdenarCanvas sonido={config.sonido} voz={config.voz} onVolver={() => setModo("menu")} />;
+  }
+  if (modo === "falta") {
+    return <FaltaCanvas sonido={config.sonido} voz={config.voz} onVolver={() => setModo("menu")} />;
+  }
+  if (modo === "masomenos") {
+    return <MasMenosCanvas sonido={config.sonido} voz={config.voz} onVolver={() => setModo("menu")} />;
+  }
+  if (modo === "sumar") {
+    return <SumarCanvas sonido={config.sonido} voz={config.voz} onVolver={() => setModo("menu")} />;
+  }
+  if (modo === "antesdespues") {
+    return <AntesDepuesCanvas sonido={config.sonido} voz={config.voz} onVolver={() => setModo("menu")} />;
   }
   if (modo === "pronunciar") {
     return (
