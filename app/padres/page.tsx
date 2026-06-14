@@ -1,13 +1,12 @@
 import { createClient } from "@/lib/supabase-server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import PadresDashboard from "./PadresDashboard";
 import type { Nino, ResumenProgreso } from "@/lib/types";
 
 export default async function PadresPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) redirect("/padres/login");
 
@@ -17,9 +16,8 @@ export default async function PadresPage() {
     .eq("adulto_id", user.id)
     .order("creado_en");
 
-  const ninoIds = (ninos ?? []).map((n) => n.id);
+  const ninoIds = (ninos ?? []).map(n => n.id);
 
-  // Progreso: sólo si hay niños registrados
   let progreso: ResumenProgreso[] = [];
   if (ninoIds.length > 0) {
     const { data } = await supabase
@@ -29,23 +27,28 @@ export default async function PadresPage() {
     progreso = (data as ResumenProgreso[]) ?? [];
   }
 
-  // Últimas miniaturas: join defensiva
-  let miniaturas: {
-    id: string;
-    trazo_miniatura: string;
-    creado_en: string;
-    actividad_id: string;
-    completado: boolean;
-  }[] = [];
-  if (ninoIds.length > 0) {
-    const { data } = await supabase
-      .from("intentos")
-      .select("id, trazo_miniatura, creado_en, actividad_id, completado, sesiones!inner(nino_id)")
-      .not("trazo_miniatura", "is", null)
-      .in("sesiones.nino_id", ninoIds)
-      .order("creado_en", { ascending: false })
-      .limit(30);
-    miniaturas = (data as typeof miniaturas) ?? [];
+  // Lista de administradores via Admin API (service role key)
+  let admins: { id: string; email: string; created_at: string; last_sign_in_at: string | null }[] = [];
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (serviceKey) {
+    try {
+      const adminClient = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceKey,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
+      const { data: usersData } = await adminClient.auth.admin.listUsers({ perPage: 100 });
+      admins = (usersData?.users ?? [])
+        .filter(u => u.id !== user.id) // excluir usuario actual (se muestra aparte como "Tú")
+        .map(u => ({
+          id: u.id,
+          email: u.email ?? "",
+          created_at: u.created_at,
+          last_sign_in_at: u.last_sign_in_at ?? null,
+        }));
+    } catch {
+      // Sin service key o error → lista vacía, no bloquea
+    }
   }
 
   return (
@@ -53,7 +56,7 @@ export default async function PadresPage() {
       user={user}
       ninos={(ninos as Nino[]) ?? []}
       progreso={progreso}
-      miniaturas={miniaturas}
+      admins={admins}
     />
   );
 }

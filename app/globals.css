@@ -165,6 +165,14 @@ html, body {
 .campo:focus {
   border-color: var(--sol);
 }
+.campo-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  color: #8AA7BC;
+  margin-bottom: 6px;
+}
 
 .btn-padres {
   padding: 16px 32px;
