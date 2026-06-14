@@ -39,6 +39,7 @@ export default function Juego09Ciudad({ sonido, voz, onCompletado }: JuegoProps)
     <div className="fixed inset-0" style={{
       background: "radial-gradient(ellipse at 50% 0%, #1a2a4a 0%, #0a0f1e 80%)",
       touchAction: "none",
+      height: "100dvh",
     }}>
       <Bocadillo texto="¡Enciende las luces! 💡" />
       <Estrellita x={12} y={150} size={60} celebrando={celebrando} />

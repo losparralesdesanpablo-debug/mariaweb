@@ -26,14 +26,12 @@ export default function Juego08Mar({ sonido, voz, onCompletado }: JuegoProps) {
   function iniciarDrag(e: React.PointerEvent, id: number) {
     if (enCofre.has(id)) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    const rect = containerRef.current!.getBoundingClientRect();
-    setDrag({ id, x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 });
+    setDrag({ id, x: (e.clientX / window.innerWidth) * 100, y: (e.clientY / window.innerHeight) * 100 });
   }
 
   function moverDrag(e: React.PointerEvent) {
     if (!drag) return;
-    const rect = containerRef.current!.getBoundingClientRect();
-    setDrag(d => d ? { ...d, x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 } : null);
+    setDrag(d => d ? { ...d, x: (e.clientX / window.innerWidth) * 100, y: (e.clientY / window.innerHeight) * 100 } : null);
   }
 
   function soltarDrag() {
@@ -61,6 +59,7 @@ export default function Juego08Mar({ sonido, voz, onCompletado }: JuegoProps) {
         background: "linear-gradient(180deg, #006994 0%, #004d6b 40%, #003355 100%)",
         touchAction: "none",
         overflow: "hidden",
+        height: "100dvh",
       }}
       onPointerMove={moverDrag}
       onPointerUp={soltarDrag}

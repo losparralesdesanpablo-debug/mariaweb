@@ -57,6 +57,7 @@ export default function Juego05Granja({ sonido, voz, onCompletado }: JuegoProps)
     <div className="fixed inset-0" style={{
       background: "linear-gradient(180deg, #87CEEB 0%, #C8E8FF 35%, #5BCB77 35%, #3BA055 100%)",
       touchAction: "none",
+      height: "100dvh",
     }}>
       <Bocadillo texto={`¿Quién dice "${animalActual?.sonido}"? 🐾`} />
       <Estrellita x={10} y={140} size={65} celebrando={celebrando} />

@@ -25,10 +25,9 @@ export default function Juego04Peces({ sonido, voz, onCompletado }: JuegoProps) 
   }, [voz]);
 
   function pct(e: React.PointerEvent) {
-    const rect = containerRef.current!.getBoundingClientRect();
     return {
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top)  / rect.height) * 100,
+      x: (e.clientX / window.innerWidth) * 100,
+      y: (e.clientY / window.innerHeight) * 100,
     };
   }
 
@@ -65,7 +64,7 @@ export default function Juego04Peces({ sonido, voz, onCompletado }: JuegoProps) 
     <div
       ref={containerRef}
       className="fixed inset-0"
-      style={{ touchAction: "none", overflow: "hidden" }}
+      style={{ touchAction: "none", overflow: "hidden", height: "100dvh" }}
       onPointerMove={moverDrag}
       onPointerUp={soltarDrag}
     >

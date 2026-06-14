@@ -73,6 +73,7 @@ export default function Juego07Bosque({ sonido, voz, onCompletado }: JuegoProps)
     <div className="fixed inset-0" style={{
       background: "radial-gradient(ellipse at 50% 0%, #1a3d1a 0%, #0d1f0d 80%)",
       touchAction: "none",
+      height: "100dvh",
     }}>
       <Bocadillo texto={fase === "mostrando" ? "¡Mira bien! 👀" : "¡Ahora tú! 👆"} />
       <Estrellita x={10} y={140} size={65} celebrando={celebrando} />

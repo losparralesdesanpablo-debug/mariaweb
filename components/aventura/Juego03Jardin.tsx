@@ -58,6 +58,7 @@ export default function Juego03Jardin({ sonido, voz, onCompletado }: JuegoProps)
     <div className="fixed inset-0" style={{
       background: "linear-gradient(180deg, #87CEEB 0%, #5BCB77 60%, #3BA055 100%)",
       touchAction: "none",
+      height: "100dvh",
     }}>
       <Bocadillo texto="¡Toca la flor abierta! 🌸" />
       <Estrellita x={10} y={140} size={65} celebrando={celebrando} />

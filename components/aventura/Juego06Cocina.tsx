@@ -27,14 +27,12 @@ export default function Juego06Cocina({ sonido, voz, onCompletado }: JuegoProps)
   function iniciarDrag(e: React.PointerEvent, id: number) {
     if (enOlla.has(id) || id !== paso) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    const rect = containerRef.current!.getBoundingClientRect();
-    setDrag({ id, x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 });
+    setDrag({ id, x: (e.clientX / window.innerWidth) * 100, y: (e.clientY / window.innerHeight) * 100 });
   }
 
   function moverDrag(e: React.PointerEvent) {
     if (!drag) return;
-    const rect = containerRef.current!.getBoundingClientRect();
-    setDrag(d => d ? { ...d, x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 } : null);
+    setDrag(d => d ? { ...d, x: (e.clientX / window.innerWidth) * 100, y: (e.clientY / window.innerHeight) * 100 } : null);
   }
 
   function soltarDrag() {
@@ -65,6 +63,7 @@ export default function Juego06Cocina({ sonido, voz, onCompletado }: JuegoProps)
       style={{
         background: "radial-gradient(ellipse at 50% 0%, #2d1b69 0%, #1a0a3d 70%)",
         touchAction: "none",
+        height: "100dvh",
       }}
       onPointerMove={moverDrag}
       onPointerUp={soltarDrag}

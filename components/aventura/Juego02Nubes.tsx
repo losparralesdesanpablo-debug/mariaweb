@@ -32,14 +32,12 @@ export default function Juego02Nubes({ sonido, voz, onCompletado }: JuegoProps) 
   function iniciarDrag(e: React.PointerEvent, idx: number) {
     if (colocadas.has(GOTAS_INICIO[idx].colorId)) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    const rect = containerRef.current!.getBoundingClientRect();
-    setDrag({ idx, x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 });
+    setDrag({ idx, x: (e.clientX / window.innerWidth) * 100, y: (e.clientY / window.innerHeight) * 100 });
   }
 
   function moverDrag(e: React.PointerEvent) {
     if (!drag) return;
-    const rect = containerRef.current!.getBoundingClientRect();
-    setDrag(d => d ? { ...d, x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 } : null);
+    setDrag(d => d ? { ...d, x: (e.clientX / window.innerWidth) * 100, y: (e.clientY / window.innerHeight) * 100 } : null);
   }
 
   function soltarDrag() {
@@ -66,7 +64,7 @@ export default function Juego02Nubes({ sonido, voz, onCompletado }: JuegoProps) 
     <div
       ref={containerRef}
       className="fixed inset-0"
-      style={{ background: "linear-gradient(180deg, #87CEEB 0%, #C8E8FF 60%, #EAF6FF 100%)", touchAction: "none" }}
+      style={{ background: "linear-gradient(180deg, #87CEEB 0%, #C8E8FF 60%, #EAF6FF 100%)", touchAction: "none", height: "100dvh" }}
       onPointerMove={moverDrag}
       onPointerUp={soltarDrag}
     >

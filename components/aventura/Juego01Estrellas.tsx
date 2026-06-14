@@ -36,6 +36,7 @@ export default function Juego01Estrellas({ sonido, voz, onCompletado }: JuegoPro
     <div className="fixed inset-0" style={{
       background: "radial-gradient(ellipse at 50% 0%, #1a3a6e 0%, #0A1628 80%)",
       touchAction: "none",
+      height: "100dvh",
     }}>
       <Bocadillo texto="¡Despierta las estrellas! ✨" />
       <Estrellita x={30} y={140} size={70} celebrando={celebrando} />
