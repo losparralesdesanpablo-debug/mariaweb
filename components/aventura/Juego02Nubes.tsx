@@ -7,16 +7,16 @@ import { pip, fanfarria, hablar } from "./utils";
 import type { JuegoProps } from "./utils";
 
 const COLORES = [
-  { id: "rojo",     hex: "#FF6B6B", nubeX: 15, nubeY: 20 },
-  { id: "azul",     hex: "#6BA8FF", nubeX: 40, nubeY: 15 },
-  { id: "verde",    hex: "#5BCB77", nubeX: 65, nubeY: 20 },
-  { id: "amarillo", hex: "#FFC93D", nubeX: 88, nubeY: 18 },
+  { id: "rojo",     hex: "#FF6B6B", nubeX: 18, nubeY: 38 },
+  { id: "azul",     hex: "#6BA8FF", nubeX: 40, nubeY: 28 },
+  { id: "verde",    hex: "#5BCB77", nubeX: 62, nubeY: 38 },
+  { id: "amarillo", hex: "#FFC93D", nubeX: 84, nubeY: 28 },
 ];
 const GOTAS_INICIO = [
-  { colorId: "rojo",     ix: 12, iy: 75 },
-  { colorId: "azul",     ix: 35, iy: 80 },
-  { colorId: "verde",    ix: 60, iy: 78 },
-  { colorId: "amarillo", ix: 82, iy: 74 },
+  { colorId: "rojo",     ix: 18, iy: 78 },
+  { colorId: "azul",     ix: 38, iy: 82 },
+  { colorId: "verde",    ix: 62, iy: 78 },
+  { colorId: "amarillo", ix: 82, iy: 82 },
 ];
 
 export default function Juego02Nubes({ sonido, voz, onCompletado }: JuegoProps) {
@@ -42,13 +42,13 @@ export default function Juego02Nubes({ sonido, voz, onCompletado }: JuegoProps) 
     setDrag(d => d ? { ...d, x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 } : null);
   }
 
-  function soltarDrag(e: React.PointerEvent) {
+  function soltarDrag() {
     if (!drag) return;
     const gota = GOTAS_INICIO[drag.idx];
     const nube = COLORES.find(c => c.id === gota.colorId)!;
     const dx = drag.x - nube.nubeX;
     const dy = drag.y - nube.nubeY;
-    if (Math.sqrt(dx * dx + dy * dy) < 18) {
+    if (Math.sqrt(dx * dx + dy * dy) < 20) {
       if (sonido) pip(523 + COLORES.findIndex(c => c.id === gota.colorId) * 130, 0.3, 0.22);
       const next = new Set(colocadas).add(gota.colorId);
       setColocadas(next);
@@ -66,12 +66,12 @@ export default function Juego02Nubes({ sonido, voz, onCompletado }: JuegoProps) 
     <div
       ref={containerRef}
       className="fixed inset-0"
-      style={{ background: "linear-gradient(180deg, #87CEEB 0%, #C8E8FF 100%)", touchAction: "none", position: "relative" }}
+      style={{ background: "linear-gradient(180deg, #87CEEB 0%, #C8E8FF 60%, #EAF6FF 100%)", touchAction: "none" }}
       onPointerMove={moverDrag}
       onPointerUp={soltarDrag}
     >
       <Bocadillo texto="Lleva la gota a su nube 🌧️" />
-      <Estrellita x={20} y={140} size={65} celebrando={celebrando} />
+      <Estrellita x={10} y={150} size={60} celebrando={celebrando} />
 
       {/* Nubes */}
       {COLORES.map(c => (
@@ -80,13 +80,42 @@ export default function Juego02Nubes({ sonido, voz, onCompletado }: JuegoProps) 
           left: `${c.nubeX}%`, top: `${c.nubeY}%`,
           transform: "translate(-50%,-50%)",
           pointerEvents: "none",
+          filter: colocadas.has(c.id) ? "drop-shadow(0 0 12px rgba(255,255,255,.9))" : "none",
+          transition: "filter .3s",
         }}>
-          <svg viewBox="0 0 120 70" width={110} height={65}>
-            <ellipse cx="60" cy="45" rx="55" ry="25" fill={c.hex} opacity="0.9" />
-            <ellipse cx="40" cy="35" rx="28" ry="22" fill={c.hex} opacity="0.9" />
-            <ellipse cx="75" cy="32" rx="25" ry="20" fill={c.hex} opacity="0.9" />
-            <ellipse cx="60" cy="45" rx="55" ry="25" fill="white" opacity="0.25" />
+          <svg viewBox="0 0 120 70" width={100} height={58}>
+            <ellipse cx="60" cy="45" rx="55" ry="25" fill={c.hex} opacity="0.85" />
+            <ellipse cx="38" cy="34" rx="27" ry="22" fill={c.hex} opacity="0.85" />
+            <ellipse cx="76" cy="32" rx="24" ry="19" fill={c.hex} opacity="0.85" />
+            {/* Brillo si está completa */}
+            {colocadas.has(c.id) && (
+              <ellipse cx="60" cy="38" rx="50" ry="22" fill="white" opacity="0.3" />
+            )}
+            {/* Indicador destino */}
+            {!colocadas.has(c.id) && (
+              <ellipse cx="60" cy="55" rx="12" ry="5" fill="white" opacity="0.5" />
+            )}
           </svg>
+        </div>
+      ))}
+
+      {/* Líneas de lluvia para gotas ya colocadas */}
+      {COLORES.filter(c => colocadas.has(c.id)).map(c => (
+        <div key={`lluvia-${c.id}`} style={{
+          position: "absolute",
+          left: `${c.nubeX}%`, top: `${c.nubeY + 6}%`,
+          transform: "translateX(-50%)",
+          pointerEvents: "none",
+        }}>
+          {[0,1,2].map(j => (
+            <div key={j} style={{
+              width: 3, height: 18, background: c.hex,
+              borderRadius: 2, opacity: 0.7,
+              display: "inline-block", margin: "0 4px",
+              animation: `caer 0.8s ease-in infinite`,
+              animationDelay: `${j * 0.2}s`,
+            }} />
+          ))}
         </div>
       ))}
 
@@ -112,14 +141,21 @@ export default function Juego02Nubes({ sonido, voz, onCompletado }: JuegoProps) 
               transition: isDragging ? "none" : "all .15s",
             }}
           >
-            <svg viewBox="0 0 50 65" width={55} height={70}>
+            <svg viewBox="0 0 50 65" width={52} height={66}>
               <path d="M25 5 C25 5 5 35 5 47 A20 20 0 0 0 45 47 C45 35 25 5 25 5Z"
-                fill={color.hex} stroke={color.hex} strokeWidth="2" />
+                fill={color.hex} stroke="rgba(0,0,0,.1)" strokeWidth="1" />
               <ellipse cx="18" cy="42" rx="5" ry="7" fill="white" opacity="0.35" />
             </svg>
           </div>
         );
       })}
+
+      <style>{`
+        @keyframes caer {
+          0%   { transform: translateY(0); opacity: .7; }
+          100% { transform: translateY(24px); opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 }
