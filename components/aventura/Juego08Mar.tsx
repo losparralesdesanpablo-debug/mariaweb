@@ -148,7 +148,7 @@ export default function Juego08Mar({ sonido, voz, onCompletado }: JuegoProps) {
               touchAction: "none",
               zIndex: isDragging ? 20 : 5,
               filter: isDragging ? "drop-shadow(0 6px 12px rgba(0,0,0,.5))" : "drop-shadow(0 2px 6px rgba(0,0,0,.4))",
-              transition: isDragging ? "none" : "all .15s",
+              transition: "none",
             }}
           >
             <div style={{

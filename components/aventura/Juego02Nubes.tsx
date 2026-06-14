@@ -138,7 +138,7 @@ export default function Juego02Nubes({ sonido, voz, onCompletado }: JuegoProps) 
               touchAction: "none",
               zIndex: isDragging ? 20 : 5,
               filter: isDragging ? "drop-shadow(0 6px 10px rgba(0,0,0,.3))" : "drop-shadow(0 2px 4px rgba(0,0,0,.2))",
-              transition: isDragging ? "none" : "all .15s",
+              transition: "none",
             }}
           >
             <svg viewBox="0 0 50 65" width={52} height={66}>
