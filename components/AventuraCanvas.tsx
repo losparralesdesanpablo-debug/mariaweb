@@ -71,6 +71,23 @@ export default function AventuraCanvas({
         🏠
       </button>
 
+      {/* Botón saltar (solo en juegos, no en mapa) */}
+      {escena !== "mapa" && celebrando === null && (
+        <button
+          onClick={completarEscena}
+          style={{
+            position: "fixed", top: 16, right: 16, zIndex: 40,
+            background: "rgba(255,255,255,.15)", border: "2px solid rgba(255,255,255,.3)",
+            fontSize: 13, fontWeight: 700, borderRadius: 16,
+            padding: "8px 14px", cursor: "pointer", color: "white",
+            fontFamily: "ui-rounded, system-ui, sans-serif",
+          }}
+          aria-label="Saltar escena"
+        >
+          ⏭ Saltar
+        </button>
+      )}
+
       {escena === "mapa" && (
         <MapaMundo
           completadas={completadas}
