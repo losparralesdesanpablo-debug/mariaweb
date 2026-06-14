@@ -17,27 +17,43 @@ export default async function PadresPage() {
     .eq("adulto_id", user.id)
     .order("creado_en");
 
-  // Progreso de todos los niños del adulto
-  const { data: progreso } = await supabase
-    .from("resumen_progreso")
-    .select("*");
+  const ninoIds = (ninos ?? []).map((n) => n.id);
 
-  // Últimas miniaturas (máx 30)
-  const { data: miniaturas } = await supabase
-    .from("intentos")
-    .select(
-      "id, trazo_miniatura, creado_en, actividad_id, completado, sesiones!inner(nino_id)"
-    )
-    .not("trazo_miniatura", "is", null)
-    .order("creado_en", { ascending: false })
-    .limit(30);
+  // Progreso: sólo si hay niños registrados
+  let progreso: ResumenProgreso[] = [];
+  if (ninoIds.length > 0) {
+    const { data } = await supabase
+      .from("resumen_progreso")
+      .select("*")
+      .in("nino_id", ninoIds);
+    progreso = (data as ResumenProgreso[]) ?? [];
+  }
+
+  // Últimas miniaturas: join defensiva
+  let miniaturas: {
+    id: string;
+    trazo_miniatura: string;
+    creado_en: string;
+    actividad_id: string;
+    completado: boolean;
+  }[] = [];
+  if (ninoIds.length > 0) {
+    const { data } = await supabase
+      .from("intentos")
+      .select("id, trazo_miniatura, creado_en, actividad_id, completado, sesiones!inner(nino_id)")
+      .not("trazo_miniatura", "is", null)
+      .in("sesiones.nino_id", ninoIds)
+      .order("creado_en", { ascending: false })
+      .limit(30);
+    miniaturas = (data as typeof miniaturas) ?? [];
+  }
 
   return (
     <PadresDashboard
       user={user}
       ninos={(ninos as Nino[]) ?? []}
-      progreso={(progreso as ResumenProgreso[]) ?? []}
-      miniaturas={miniaturas ?? []}
+      progreso={progreso}
+      miniaturas={miniaturas}
     />
   );
 }
