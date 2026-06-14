@@ -7,8 +7,9 @@ import ColorearCanvas from "./ColorearCanvas";
 import AventuraCanvas from "./AventuraCanvas";
 import PantallaPIN from "./PantallaPIN";
 import PuntosCanvas from "./PuntosCanvas";
+import NumeroTrazoCanvas from "./NumeroTrazoCanvas";
 import { setNinoId, iniciarReintentoCola } from "@/lib/trazo-store";
-import { NUMEROS, VOCALES } from "@/lib/figuras";
+import { VOCALES } from "@/lib/figuras";
 import type { Actividad, ConfiguracionNino } from "@/lib/types";
 
 type Modo = "pin" | "menu" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales";
@@ -78,11 +79,8 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
   }
   if (modo === "numeros") {
     return (
-      <PuntosCanvas
-        figuras={NUMEROS}
-        tipo="numeros"
-        sonido={config.sonido}
-        voz={config.voz}
+      <NumeroTrazoCanvas
+        config={config}
         onVolver={() => setModo("menu")}
       />
     );
