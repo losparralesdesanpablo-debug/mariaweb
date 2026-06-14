@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface MenuInicioProps {
-  onJuego: (juego: "trazos" | "colorear" | "aventura") => void;
+  onJuego: (juego: "trazos" | "colorear" | "aventura" | "numeros" | "vocales") => void;
 }
 
 export default function MenuInicio({ onJuego }: MenuInicioProps) {
@@ -69,6 +69,22 @@ export default function MenuInicio({ onJuego }: MenuInicioProps) {
           textColor="#ffffff"
           onClick={() => onJuego("aventura")}
         />
+        <BotonazoMenu
+          emoji="🔢"
+          etiqueta="Números"
+          color="#FF8C42"
+          sombra="#CC6010"
+          textColor="#ffffff"
+          onClick={() => onJuego("numeros")}
+        />
+        <BotonazoMenu
+          emoji="🔤"
+          etiqueta="Vocales"
+          color="#C792EA"
+          sombra="#8A4FBF"
+          textColor="#ffffff"
+          onClick={() => onJuego("vocales")}
+        />
       </div>
 
       {/* Botón invisible 3s → /padres */}
@@ -96,7 +112,7 @@ function BotonazoMenu({
       onClick={onClick}
       style={{
         width: "100%",
-        minHeight: 110,
+        minHeight: 90,
         border: "none",
         borderRadius: 32,
         background: color,

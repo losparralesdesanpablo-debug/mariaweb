@@ -6,10 +6,12 @@ import TrazoCanvas from "./TrazoCanvas";
 import ColorearCanvas from "./ColorearCanvas";
 import AventuraCanvas from "./AventuraCanvas";
 import PantallaPIN from "./PantallaPIN";
+import PuntosCanvas from "./PuntosCanvas";
 import { setNinoId, iniciarReintentoCola } from "@/lib/trazo-store";
+import { NUMEROS, VOCALES } from "@/lib/figuras";
 import type { Actividad, ConfiguracionNino } from "@/lib/types";
 
-type Modo = "pin" | "menu" | "trazos" | "colorear" | "aventura";
+type Modo = "pin" | "menu" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales";
 
 interface ZonaNinaProps {
   actividades: Actividad[];
@@ -71,6 +73,28 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
         sonido={config.sonido}
         voz={config.voz}
         onCambiarModo={() => setModo("menu")}
+      />
+    );
+  }
+  if (modo === "numeros") {
+    return (
+      <PuntosCanvas
+        figuras={NUMEROS}
+        tipo="numeros"
+        sonido={config.sonido}
+        voz={config.voz}
+        onVolver={() => setModo("menu")}
+      />
+    );
+  }
+  if (modo === "vocales") {
+    return (
+      <PuntosCanvas
+        figuras={VOCALES}
+        tipo="vocales"
+        sonido={config.sonido}
+        voz={config.voz}
+        onVolver={() => setModo("menu")}
       />
     );
   }
