@@ -165,17 +165,17 @@ interface ColorearCanvasProps {
 // ─── Componente ───────────────────────────────────────────────────────────────
 
 export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearCanvasProps) {
-  const canvasRef  = useRef<HTMLCanvasElement>(null);
-  const confetiRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef   = useRef<HTMLCanvasElement>(null);
+  const confetiRef  = useRef<HTMLCanvasElement>(null);
   const imgCacheRef = useRef<Map<string,HTMLImageElement>>(new Map());
-  const dprRef = useRef(1);
+  const dprRef      = useRef(1);
 
   const [dibActual, setDibActual] = useState(0);
   const [colorSel, setColorSel]   = useState(PALETA[0]);
-  const [fiesta, setFiesta]       = useState(false);
   const [cargando, setCargando]   = useState(true);
-  // Set de IDs de zonas ya coloreadas
   const [zonasOk, setZonasOk]     = useState<Set<string>>(new Set());
+  const [estrellas, setEstrellas] = useState(0);       // dibujos completados en sesión
+  const [brillo, setBrillo]       = useState(false);   // animación estrella al ganar
 
   const dibujo = DIBUJOS[dibActual];
 
@@ -185,7 +185,6 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
     const canvas = canvasRef.current;
     if (!canvas) return;
     setCargando(true);
-    setFiesta(false);
     if (resetZonas) setZonasOk(new Set());
 
     const dib = DIBUJOS[idx];
@@ -252,7 +251,6 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     e.preventDefault();
     getAudio();
-    if (fiesta) return;
 
     const canvas = canvasRef.current!;
     const rect   = canvas.getBoundingClientRect();
@@ -275,69 +273,98 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
       setZonasOk(prev => {
         const next = new Set(prev);
         next.add(zonaId);
-        // ¿Todas las zonas están pintadas?
         if (next.size >= dibujo.zonas.length) {
           if (sonido) fanfarria();
-          if (voz) hablar("¡Muy bien! ¡Qué bonito ha quedado!");
+          if (voz) hablar("¡Qué bonito ha quedado!");
           if (confetiRef.current) lanzarConfeti(confetiRef.current);
-          setTimeout(() => setFiesta(true), 400);
+          setEstrellas(s => s + 1);
+          setBrillo(true);
+          setTimeout(() => setBrillo(false), 1000);
         } else {
-          // Sonido de progreso ligeramente más agudo a medida que avanza
           if (sonido) pip(500 + (next.size / dibujo.zonas.length) * 300, 0.12, 0.15);
         }
         return next;
       });
     }
-  }, [colorSel, dibujo, fiesta, sonido, voz]);
+  }, [colorSel, dibujo, sonido, voz]);
 
   // ── Siguiente / repetir ───────────────────────────────────────────────────
 
   function siguiente() { setDibActual(d => (d+1) % DIBUJOS.length); }
+  function anterior()  { setDibActual(d => (d - 1 + DIBUJOS.length) % DIBUJOS.length); }
   function repetir()   { renderizarDibujo(dibActual, true); }
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
-  const totalZonas = dibujo.zonas.length;
+  const totalZonas      = dibujo.zonas.length;
   const zonasCompletadas = zonasOk.size;
+  const porcentaje      = Math.round((zonasCompletadas / totalZonas) * 100);
+  const completado      = zonasCompletadas >= totalZonas;
 
   return (
     <>
-      {/* Barra superior — z-index 20 para estar sobre el canvas */}
+      {/* ── Barra superior ── */}
       <div
-        className="fixed left-0 right-0 flex items-center justify-between px-5 pointer-events-none"
+        className="fixed left-0 right-0 flex items-center justify-between px-4 pointer-events-none"
         style={{ top: "env(safe-area-inset-top, 0px)", height: 96, zIndex: 20 }}
       >
-        <button className="boton pointer-events-auto" aria-label="Escuchar" onClick={() => { if(voz) hablar(dibujo.frase); }}>
-          🔊
-        </button>
+        {/* Izquierda: puntuación (estrellas ganadas) */}
+        <div
+          className="pointer-events-auto flex flex-col items-center justify-center"
+          style={{
+            minWidth: 78, height: 78,
+            background: "white",
+            borderRadius: 20,
+            boxShadow: "0 4px 0 rgba(42,77,105,.15)",
+            padding: "4px 10px",
+            gap: 2,
+          }}
+        >
+          <span style={{
+            fontSize: brillo ? 36 : 28,
+            transition: "font-size .2s",
+            lineHeight: 1,
+            filter: brillo ? "drop-shadow(0 0 8px #FFC93D)" : "none",
+          }}>
+            ⭐
+          </span>
+          <span style={{
+            fontSize: 22, fontWeight: 900, color: "#2A4D69",
+            fontFamily: "ui-rounded, 'Arial Rounded MT Bold', system-ui, sans-serif",
+            lineHeight: 1,
+          }}>
+            {estrellas}
+          </span>
+        </div>
 
-        {/* Progreso: puntos de zona */}
+        {/* Centro: progreso de zonas del dibujo actual */}
         <div className="pointer-events-none flex flex-col items-center gap-1">
-          <div className="flex gap-[8px] flex-wrap justify-center" style={{ maxWidth: "55vw" }}>
-            {DIBUJOS.map((_, i) => (
-              <div key={i} className={`punto ${i<dibActual?"hecho":i===dibActual?"actual":""}`} style={{width:13,height:13}}/>
-            ))}
+          <div style={{
+            fontSize: 13, fontWeight: 700, color: "#8AA7BC",
+            fontFamily: "ui-rounded, system-ui, sans-serif",
+          }}>
+            {porcentaje}%
           </div>
-          {/* Zonas del dibujo actual */}
-          <div className="flex gap-[6px]">
+          <div className="flex gap-[6px] flex-wrap justify-center" style={{ maxWidth: "45vw" }}>
             {dibujo.zonas.map(z => (
               <div key={z.id} style={{
-                width:16, height:16, borderRadius:"50%",
-                background: zonasOk.has(z.id) ? "#5BCB77" : "#fff",
+                width: 14, height: 14, borderRadius: "50%",
+                background: zonasOk.has(z.id) ? "#5BCB77" : "white",
                 border: `3px solid ${zonasOk.has(z.id) ? "#5BCB77" : "#BFE0F2"}`,
-                transition: "all .2s",
+                transition: "all .25s",
               }}/>
             ))}
           </div>
         </div>
 
-        <div className="flex gap-3 pointer-events-auto">
+        {/* Derecha: botones */}
+        <div className="flex gap-2 pointer-events-auto">
           <button className="boton" aria-label="Borrar" onClick={repetir}>🧽</button>
-          <button className="boton" aria-label="Volver a trazos" onClick={onCambiarModo}>✏️</button>
+          <button className="boton" aria-label="Volver al menú" onClick={onCambiarModo}>🏠</button>
         </div>
       </div>
 
-      {/* Canvas — z-index 1, debajo de la UI */}
+      {/* ── Canvas ── */}
       <canvas
         ref={canvasRef}
         className="fixed inset-0"
@@ -347,64 +374,69 @@ export default function ColorearCanvas({ sonido, voz, onCambiarModo }: ColorearC
 
       {/* Spinner */}
       {cargando && (
-        <div className="fixed inset-0 flex items-center justify-center pointer-events-none" style={{zIndex:15}}>
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 15 }}>
           <div className="text-6xl animate-bounce">🎨</div>
         </div>
       )}
 
-      {/* Paleta — z-index 20 para capturar toques sobre el canvas */}
+      {/* ── Paleta + flechas ── */}
       <div
-        className="fixed left-0 right-0 flex justify-center gap-3 px-4"
-        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)", zIndex: 20 }}
+        className="fixed left-0 right-0 flex items-center justify-between px-3"
+        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 14px)", zIndex: 20 }}
       >
-        {PALETA.map((color) => (
-          <button
-            key={color}
-            aria-label={`Color ${color}`}
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              setColorSel(color);
-              if (sonido) pip(660, 0.06, 0.1);
-            }}
-            style={{
-              width: 58, height: 58, borderRadius: "50%",
-              background: color,
-              border: colorSel===color ? "5px solid #2A4D69" : "5px solid white",
-              boxShadow: colorSel===color ? "0 4px 0 rgba(42,77,105,.3)" : "0 4px 0 rgba(42,77,105,.14)",
-              cursor: "pointer",
-              transition: "transform .1s, border .1s",
-              transform: colorSel===color ? "scale(1.22)" : "scale(1)",
-              flexShrink: 0,
-            }}
-          />
-        ))}
+        {/* Flecha izquierda */}
+        <button
+          onPointerDown={e => { e.stopPropagation(); anterior(); }}
+          style={{
+            width: 62, height: 62, borderRadius: 18, border: "none",
+            background: "white", boxShadow: "0 4px 0 rgba(42,77,105,.18)",
+            fontSize: 28, cursor: "pointer", flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            touchAction: "none",
+          }}
+          aria-label="Dibujo anterior"
+        >◀️</button>
+
+        {/* Colores */}
+        <div className="flex gap-[7px] flex-wrap justify-center" style={{ flex: 1, margin: "0 6px" }}>
+          {PALETA.map(color => (
+            <button
+              key={color}
+              aria-label={`Color ${color}`}
+              onPointerDown={e => { e.stopPropagation(); setColorSel(color); if (sonido) pip(660, 0.06, 0.1); }}
+              style={{
+                width: 52, height: 52, borderRadius: "50%",
+                background: color,
+                border: colorSel === color ? "5px solid #2A4D69" : "5px solid white",
+                boxShadow: colorSel === color ? "0 4px 0 rgba(42,77,105,.3)" : "0 4px 0 rgba(42,77,105,.14)",
+                cursor: "pointer",
+                transition: "transform .1s, border .1s",
+                transform: colorSel === color ? "scale(1.2)" : "scale(1)",
+                flexShrink: 0,
+                touchAction: "none",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Flecha derecha */}
+        <button
+          onPointerDown={e => { e.stopPropagation(); siguiente(); }}
+          style={{
+            width: 62, height: 62, borderRadius: 18, border: "none",
+            background: completado ? "#5BCB77" : "white",
+            boxShadow: completado ? "0 4px 0 #3BA055" : "0 4px 0 rgba(42,77,105,.18)",
+            fontSize: 28, cursor: "pointer", flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            touchAction: "none",
+            transition: "background .3s, box-shadow .3s",
+          }}
+          aria-label="Dibujo siguiente"
+        >▶️</button>
       </div>
 
-      {/* Indicador de progreso de zonas (texto pequeño para adultos) */}
-      {zonasCompletadas > 0 && zonasCompletadas < totalZonas && (
-        <div
-          className="fixed pointer-events-none"
-          style={{ bottom: 100, right: 20, zIndex: 20, color:"#8AA7BC", fontSize:14 }}
-        >
-          {zonasCompletadas}/{totalZonas} zonas
-        </div>
-      )}
-
-      {/* Pantalla de celebración */}
-      {fiesta && (
-        <div className="fiesta visible" style={{zIndex:25}}>
-          <div className="estrellota">🎨</div>
-          <h1>¡QUÉ BONITO!</h1>
-          <div className="acciones">
-            <button className="botonazo repetir" onClick={repetir}>Otra vez</button>
-            <button className="botonazo seguir"  onClick={siguiente}>Siguiente</button>
-          </div>
-          <div className="datos-adulto">{dibujo.titulo} · {totalZonas} zonas pintadas</div>
-        </div>
-      )}
-
       {/* Confeti */}
-      <canvas ref={confetiRef} className="fixed inset-0 pointer-events-none" style={{zIndex:30}}/>
+      <canvas ref={confetiRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: 30 }}/>
     </>
   );
 }
