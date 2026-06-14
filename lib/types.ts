@@ -14,6 +14,7 @@ export interface Nino {
   nombre: string;
   fecha_nacimiento: string | null;
   configuracion: ConfiguracionNino;
+  pin: string | null;
   creado_en: string;
 }
 

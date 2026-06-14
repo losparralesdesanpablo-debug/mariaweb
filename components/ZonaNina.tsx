@@ -5,19 +5,22 @@ import MenuInicio from "./MenuInicio";
 import TrazoCanvas from "./TrazoCanvas";
 import ColorearCanvas from "./ColorearCanvas";
 import AventuraCanvas from "./AventuraCanvas";
+import PantallaPIN from "./PantallaPIN";
 import { setNinoId, iniciarReintentoCola } from "@/lib/trazo-store";
 import type { Actividad, ConfiguracionNino } from "@/lib/types";
 
-type Modo = "menu" | "trazos" | "colorear" | "aventura";
+type Modo = "pin" | "menu" | "trazos" | "colorear" | "aventura";
 
 interface ZonaNinaProps {
   actividades: Actividad[];
   config: ConfiguracionNino;
   ninoId: string | null;
+  ninoNombre: string;
+  ninoPin: string | null;
 }
 
-export default function ZonaNina({ actividades, config, ninoId }: ZonaNinaProps) {
-  const [modo, setModo] = useState<Modo>("menu");
+export default function ZonaNina({ actividades, config, ninoId, ninoNombre, ninoPin }: ZonaNinaProps) {
+  const [modo, setModo] = useState<Modo>(ninoPin ? "pin" : "menu");
   const [actividadIdMap] = useState<Map<string, string>>(() => {
     const m = new Map<string, string>();
     for (const a of actividades) m.set(a.codigo, a.id);
@@ -40,6 +43,15 @@ export default function ZonaNina({ actividades, config, ninoId }: ZonaNinaProps)
       { id: "demo-3", codigo: "trazo_circulo",  tipo: "trazo", titulo: "El círculo",      nivel: 3, activa: true, datos: { forma: "circulo" } },
     ];
 
+  if (modo === "pin" && ninoPin) {
+    return (
+      <PantallaPIN
+        pin={ninoPin}
+        nombre={ninoNombre}
+        onAcceso={() => setModo("menu")}
+      />
+    );
+  }
   if (modo === "menu") {
     return <MenuInicio onJuego={setModo} />;
   }

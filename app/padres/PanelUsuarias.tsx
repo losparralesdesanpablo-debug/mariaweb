@@ -18,6 +18,7 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
   const [creando, setCreando]   = useState(false);
   const [nombre, setNombre]     = useState("");
   const [fechaNac, setFechaNac] = useState("");
+  const [pin, setPin]           = useState("");
   const [cfg, setCfg]           = useState<ConfiguracionNino>(CONFIG_DEFAULT);
   const [guardando, setGuardando] = useState(false);
   const [msg, setMsg]           = useState("");
@@ -27,6 +28,7 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
     setEditando(null);
     setNombre("");
     setFechaNac("");
+    setPin("");
     setCfg(CONFIG_DEFAULT);
     setMsg("");
     setCreando(true);
@@ -36,6 +38,7 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
     setCreando(false);
     setNombre(n.nombre);
     setFechaNac(n.fecha_nacimiento ?? "");
+    setPin(n.pin ?? "");
     setCfg({ ...CONFIG_DEFAULT, ...n.configuracion });
     setMsg("");
     setEditando(n);
@@ -54,11 +57,12 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
         nombre: nombre.trim(),
         fecha_nacimiento: fechaNac || null,
         configuracion: cfg,
+        pin: pin.trim() || null,
       }).eq("id", editando.id);
       if (error) { setMsg("Error al guardar"); }
       else {
         setNinos(ns => ns.map(n => n.id === editando.id
-          ? { ...n, nombre: nombre.trim(), fecha_nacimiento: fechaNac || null, configuracion: cfg }
+          ? { ...n, nombre: nombre.trim(), fecha_nacimiento: fechaNac || null, configuracion: cfg, pin: pin.trim() || null }
           : n));
         setMsg("¡Guardado!");
         setTimeout(cerrar, 800);
@@ -69,6 +73,7 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
         nombre: nombre.trim(),
         fecha_nacimiento: fechaNac || null,
         configuracion: cfg,
+        pin: pin.trim() || null,
       }).select().single();
       if (error) { setMsg("Error al crear"); }
       else {
@@ -115,6 +120,32 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
               <input className="campo" type="date" value={fechaNac}
                 onChange={e => setFechaNac(e.target.value)} />
             </div>
+          </div>
+
+          <div>
+            <label className="campo-label">PIN DE ACCESO (solo números)</label>
+            <div className="flex items-center gap-3">
+              <input
+                className="campo"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                placeholder="Ej: 1234  (dejar vacío = sin PIN)"
+                value={pin}
+                onChange={e => setPin(e.target.value.replace(/\D/g, ""))}
+                style={{ maxWidth: 280 }}
+              />
+              {pin && (
+                <button type="button" onClick={() => setPin("")}
+                  style={{ color: "#E8604F", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 700 }}>
+                  Quitar PIN
+                </button>
+              )}
+            </div>
+            <p className="text-xs mt-1" style={{ color: "#8AA7BC" }}>
+              Si dejas el PIN vacío, la app abre directamente sin pedir código.
+            </p>
           </div>
 
           {/* Ajustes rápidos */}
@@ -166,6 +197,7 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
                   {n.fecha_nacimiento
                     ? new Date(n.fecha_nacimiento).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
                     : "Sin fecha de nacimiento"}
+                  {n.pin ? ` · PIN: ${"●".repeat(n.pin.length)}` : " · Sin PIN"}
                 </p>
               </div>
             </div>

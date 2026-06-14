@@ -21,17 +21,21 @@ export default async function HomePage() {
 
   let config: ConfiguracionNino = CONFIG_DEFAULT;
   let ninoId: string | null = null;
+  let ninoNombre = "María";
+  let ninoPin: string | null = null;
 
   if (user) {
     const { data: ninos } = await supabase
       .from("ninos")
-      .select("id, configuracion")
+      .select("id, nombre, configuracion, pin")
       .eq("adulto_id", user.id)
       .limit(1);
 
     if (ninos?.length) {
-      const nino = ninos[0] as Pick<Nino, "id" | "configuracion">;
+      const nino = ninos[0] as Pick<Nino, "id" | "nombre" | "configuracion" | "pin">;
       ninoId = nino.id;
+      ninoNombre = nino.nombre;
+      ninoPin = nino.pin ?? null;
       config = { ...CONFIG_DEFAULT, ...nino.configuracion };
     }
   }
@@ -41,6 +45,8 @@ export default async function HomePage() {
       actividades={(actividades as Actividad[]) ?? []}
       config={config}
       ninoId={ninoId}
+      ninoNombre={ninoNombre}
+      ninoPin={ninoPin}
     />
   );
 }
