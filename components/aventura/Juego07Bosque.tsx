@@ -1,135 +1,192 @@
 "use client";
 
-// Toca los hongos que se iluminan en secuencia (sigue el patrón)
 import { useState, useEffect, useRef } from "react";
 import { Estrellita, Bocadillo } from "./Piezas";
 import { pip, fanfarria, hablar } from "./utils";
 import type { JuegoProps } from "./utils";
 
 const HONGOS = [
-  { id: 0, x: 20, y: 55, color: "#FF6B6B" },
-  { id: 1, x: 40, y: 68, color: "#FFC93D" },
-  { id: 2, x: 60, y: 58, color: "#6BA8FF" },
-  { id: 3, x: 78, y: 65, color: "#5BCB77" },
+  { id: 0, x: 22, y: 60, color: "#FF6B6B" },
+  { id: 1, x: 50, y: 52, color: "#FFC93D" },
+  { id: 2, x: 78, y: 60, color: "#5BCB77" },
 ];
-const PATRON = [0, 2, 1, 3, 0, 2]; // secuencia a mostrar y repetir
+
+// Patrón simple de 4 pasos
+const PATRON = [0, 1, 2, 0];
+
+const INTERVALO  = 1000; // ms encendido
+const APAGADO    = 400;  // ms apagado entre setas
+const PAUSA_INIT = 1200; // ms de pausa antes de pedir input
 
 export default function Juego07Bosque({ sonido, voz, onCompletado }: JuegoProps) {
-  const [fase, setFase] = useState<"mostrando" | "esperando">("mostrando");
-  const [paso, setPaso] = useState(0);         // cuántos han completado
+  const [fase, setFase]         = useState<"mostrando" | "esperando">("mostrando");
   const [iluminado, setIluminado] = useState<number | null>(null);
-  const [inputIdx, setInputIdx] = useState(0); // índice en PATRON que espera input
-  const [error, setError] = useState<number | null>(null);
+  const [inputIdx, setInputIdx]  = useState(0);
+  const [error, setError]        = useState(false);
   const [celebrando, setCelebrando] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  useEffect(() => {
-    if (voz) hablar("Mira el patrón y repítelo tocando los hongos");
-    mostrarPatron(0, 3); // muestra los primeros 3 pasos
-  }, []);
+  function limpiarTimers() { timers.current.forEach(clearTimeout); timers.current = []; }
 
-  function mostrarPatron(desde: number, cuantos: number) {
+  function mostrarPatron() {
+    limpiarTimers();
     setFase("mostrando");
-    const steps = PATRON.slice(desde, desde + cuantos);
-    steps.forEach((hongoId, i) => {
-      const t1 = setTimeout(() => setIluminado(hongoId), i * 800);
-      const t2 = setTimeout(() => setIluminado(null), i * 800 + 500);
-      timerRef.current.push(t1, t2);
+    setIluminado(null);
+    setError(false);
+    setInputIdx(0);
+
+    PATRON.forEach((hongoId, i) => {
+      const t1 = setTimeout(() => {
+        setIluminado(hongoId);
+        if (sonido) pip(300 + hongoId * 180, 0.4, 0.18);
+      }, i * (INTERVALO + APAGADO));
+      const t2 = setTimeout(() => setIluminado(null), i * (INTERVALO + APAGADO) + INTERVALO);
+      timers.current.push(t1, t2);
     });
+
+    // Tras mostrar todo el patrón, esperar antes de pedir input
     const tFin = setTimeout(() => {
       setFase("esperando");
-      setInputIdx(0);
-    }, steps.length * 800 + 600);
-    timerRef.current.push(tFin);
+      if (voz) hablar("¡Ahora tú!");
+    }, PATRON.length * (INTERVALO + APAGADO) + PAUSA_INIT);
+    timers.current.push(tFin);
   }
 
-  useEffect(() => () => { timerRef.current.forEach(clearTimeout); }, []);
+  useEffect(() => {
+    if (voz) hablar("Mira las setas y repite el orden");
+    // Pequeña pausa antes de empezar
+    const t = setTimeout(mostrarPatron, 800);
+    timers.current.push(t);
+    return limpiarTimers;
+  }, []);
 
   function tocar(id: number) {
-    if (fase !== "esperando") return;
+    if (fase !== "esperando" || celebrando) return;
+
     if (id === PATRON[inputIdx]) {
-      if (sonido) pip(400 + id * 120, 0.2, 0.2);
+      // Correcto
+      setIluminado(id);
+      if (sonido) pip(400 + id * 180, 0.35, 0.2);
+      setTimeout(() => setIluminado(null), 400);
+
       const next = inputIdx + 1;
       if (next >= PATRON.length) {
+        // Completado
         setCelebrando(true);
-        if (sonido) setTimeout(fanfarria, 300);
-        if (voz) setTimeout(() => hablar("¡Muy bien! El bosque brilla"), 400);
-        setTimeout(onCompletado, 1800);
+        if (sonido) setTimeout(fanfarria, 400);
+        if (voz) setTimeout(() => hablar("¡Muy bien! El bosque brilla"), 500);
+        setTimeout(onCompletado, 2000);
       } else {
         setInputIdx(next);
       }
     } else {
-      if (sonido) pip(180, 0.15, 0.12, "sawtooth");
-      setError(id);
-      setTimeout(() => setError(null), 500);
-      // Vuelve a mostrar el patrón
-      setInputIdx(0);
-      setFase("mostrando");
-      setTimeout(() => mostrarPatron(0, 3), 800);
+      // Error — flash rojo, vuelve a mostrar
+      setError(true);
+      setIluminado(id);
+      if (sonido) pip(150, 0.3, 0.15, "sawtooth");
+      setTimeout(() => {
+        setIluminado(null);
+        setError(false);
+        setTimeout(mostrarPatron, 600);
+      }, 600);
     }
   }
 
   return (
     <div className="fixed inset-0" style={{
-      background: "radial-gradient(ellipse at 50% 0%, #1a3d1a 0%, #0d1f0d 80%)",
+      background: "radial-gradient(ellipse at 50% 20%, #1e4d1e 0%, #0a1a0a 100%)",
       touchAction: "none",
       height: "100dvh",
     }}>
       <Bocadillo texto={fase === "mostrando" ? "¡Mira bien! 👀" : "¡Ahora tú! 👆"} />
       <Estrellita x={10} y={140} size={65} celebrando={celebrando} />
 
-      {/* Árboles de fondo */}
-      {[10, 30, 55, 75, 90].map((tx, i) => (
-        <svg key={i} style={{ position:"absolute", left:`${tx}%`, bottom:"25%", pointerEvents:"none" }}
-          viewBox="0 0 60 100" width={50 + i * 8} height={80 + i * 10}>
-          <polygon points="30,5 55,70 5,70" fill={`hsl(${120+i*10},${40+i*5}%,${15+i*3}%)`} />
-          <polygon points="30,20 52,75 8,75" fill={`hsl(${120+i*10},${40+i*5}%,${12+i*3}%)`} />
-          <rect x="25" y="70" width="10" height="25" fill="#3d2b1f" />
+      {/* Árboles fondo */}
+      {[8, 28, 52, 72, 88].map((tx, i) => (
+        <svg key={i} style={{ position:"absolute", left:`${tx}%`, bottom:"28%", pointerEvents:"none" }}
+          viewBox="0 0 60 100" width={45+i*7} height={75+i*8}>
+          <polygon points="30,5 55,70 5,70" fill={`hsl(${118+i*8},${38+i*4}%,${14+i*3}%)`} />
+          <rect x="26" y="68" width="8" height="22" fill="#3d2b1f" />
         </svg>
       ))}
 
       {/* Suelo */}
-      <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"25%",
-        background:"linear-gradient(180deg,#1a3d1a 0%,#0d1f0d 100%)" }} />
+      <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"28%",
+        background:"linear-gradient(180deg,#1a3d1a 0%,#0a1a0a 100%)" }} />
+
+      {/* Indicador de progreso */}
+      {fase === "esperando" && (
+        <div style={{
+          position:"absolute", bottom:"20%", left:"50%", transform:"translateX(-50%)",
+          display:"flex", gap:10, zIndex:15,
+        }}>
+          {PATRON.map((_, i) => (
+            <div key={i} style={{
+              width: 16, height: 16, borderRadius:"50%",
+              background: i < inputIdx ? "#5BCB77" : i === inputIdx ? "white" : "rgba(255,255,255,.25)",
+              border: i === inputIdx ? "3px solid white" : "3px solid rgba(255,255,255,.3)",
+              boxShadow: i === inputIdx ? "0 0 10px white" : "none",
+              transition: "all .3s",
+            }}/>
+          ))}
+        </div>
+      )}
 
       {/* Hongos */}
       {HONGOS.map(h => {
-        const lit = iluminado === h.id || (fase === "mostrando" && false);
-        const err = error === h.id;
+        const lit = iluminado === h.id;
         return (
           <button
             key={h.id}
             onPointerDown={() => tocar(h.id)}
             style={{
-              position: "absolute",
-              left: `${h.x}%`, top: `${h.y}%`,
-              transform: `translate(-50%,-50%) scale(${err ? 0.85 : 1})`,
-              cursor: "pointer",
-              background: "none",
-              border: "none",
-              touchAction: "none",
-              zIndex: 10,
-              transition: "transform .15s",
+              position:"absolute",
+              left:`${h.x}%`, top:`${h.y}%`,
+              transform:`translate(-50%,-50%) scale(${lit ? 1.35 : 1})`,
+              cursor: fase === "esperando" ? "pointer" : "default",
+              background:"none", border:"none",
+              touchAction:"none", zIndex:10,
+              transition:"transform .2s ease, filter .2s",
+              filter: lit
+                ? error
+                  ? "drop-shadow(0 0 20px #FF4444) brightness(1.5)"
+                  : `drop-shadow(0 0 22px ${h.color}) brightness(2)`
+                : "drop-shadow(0 4px 8px rgba(0,0,0,.6))",
             }}
           >
-            <svg viewBox="0 0 80 90" width={75} height={85}>
+            <svg viewBox="0 0 80 90" width={90} height={100}>
               {/* Tallo */}
-              <ellipse cx="40" cy="78" rx="14" ry="12" fill="#d4c4a8" opacity="0.9" />
-              <rect x="28" y="52" width="24" height="30" rx="8" fill="#e8d9c0" />
+              <rect x="28" y="54" width="24" height="28" rx="8" fill="#e8d9c0" />
+              <ellipse cx="40" cy="80" rx="14" ry="8" fill="#d4c4a8" opacity="0.8" />
               {/* Sombrero */}
-              <ellipse cx="40" cy="52" rx="38" ry="12" fill={lit ? "white" : err ? "#FF4444" : h.color} style={{ transition:"fill .2s" }} />
-              <ellipse cx="40" cy="38" rx="28" ry="22" fill={lit ? "white" : err ? "#FF4444" : h.color} style={{ transition:"fill .2s" }} />
-              {/* Brillo */}
-              {lit && <ellipse cx="30" cy="32" rx="8" ry="5" fill="white" opacity="0.5" style={{ animation:"aparecer .1s ease" }} />}
+              <ellipse cx="40" cy="54" rx="38" ry="12"
+                fill={lit ? (error ? "#FF4444" : "white") : h.color} />
+              <ellipse cx="40" cy="38" rx="28" ry="24"
+                fill={lit ? (error ? "#FF4444" : "white") : h.color} />
               {/* Puntos */}
-              {[{cx:35,cy:32},{cx:50,cy:28},{cx:42,cy:44}].map((p,i)=>(
-                <circle key={i} cx={p.cx} cy={p.cy} r={5} fill="white" opacity={lit ? 0.9 : 0.5} />
+              {[{cx:32,cy:30},{cx:50,cy:26},{cx:42,cy:46},{cx:28,cy:44}].map((p,i)=>(
+                <circle key={i} cx={p.cx} cy={p.cy} r={5}
+                  fill={lit ? h.color : "white"} opacity={lit ? 1 : 0.5} />
               ))}
-              {/* Glow */}
-              {lit && <ellipse cx="40" cy="45" rx="38" ry="25" fill={h.color} opacity="0.25">
-                <animate attributeName="opacity" values="0.25;0.5;0.25" dur="0.5s" repeatCount="indefinite" />
-              </ellipse>}
+              {/* Halo cuando brilla */}
+              {lit && !error && (
+                <ellipse cx="40" cy="44" rx="40" ry="28" fill={h.color} opacity="0.2">
+                  <animate attributeName="opacity" values="0.15;0.35;0.15" dur="0.6s" repeatCount="indefinite"/>
+                </ellipse>
+              )}
             </svg>
+            {/* Número identificador visible durante la demo */}
+            {fase === "mostrando" && (
+              <div style={{
+                position:"absolute", bottom:-8, left:"50%", transform:"translateX(-50%)",
+                width:24, height:24, borderRadius:"50%",
+                background: h.color, border:"2px solid white",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                fontSize:13, fontWeight:900, color:"white",
+              }}>
+                {h.id + 1}
+              </div>
+            )}
           </button>
         );
       })}
