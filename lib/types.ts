@@ -5,7 +5,7 @@ export interface Actividad {
   titulo: string;
   nivel: number;
   activa: boolean;
-  datos: { forma: "onda" | "zigzag" | "circulo" };
+  datos: { forma: "onda" | "zigzag" | "circulo" | "espiral" | "ocho" | "rampa" | "escalera" | "eses" | "bucles" | "diagonal" };
 }
 
 export interface Nino {
@@ -65,7 +65,14 @@ export const CONFIG_DEFAULT: ConfiguracionNino = {
 };
 
 export const FRASES_NIVEL: Record<string, string> = {
-  trazo_ondulado: "¡Repasa el camino hasta la estrella!",
-  trazo_montanas: "¡Sube y baja las montañas hasta la estrella!",
-  trazo_circulo: "¡Da la vuelta entera hasta la estrella!",
+  trazo_ondulado:  "¡Repasa el camino hasta la estrella!",
+  trazo_montanas:  "¡Sube y baja las montañas hasta la estrella!",
+  trazo_circulo:   "¡Da la vuelta entera hasta la estrella!",
+  trazo_espiral:   "¡Sigue la espiral hasta la estrella!",
+  trazo_ocho:      "¡Dibuja el ocho hasta la estrella!",
+  trazo_rampa:     "¡Sube por la rampa hasta la estrella!",
+  trazo_escalera:  "¡Sube los escalones hasta la estrella!",
+  trazo_eses:      "¡Sigue las curvas hasta la estrella!",
+  trazo_bucles:    "¡Haz los bucles hasta la estrella!",
+  trazo_diagonal:  "¡Cruza en diagonal hasta la estrella!",
 };

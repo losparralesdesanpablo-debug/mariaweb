@@ -76,22 +76,20 @@ const GROSOR_CAMINO = 64;
 const N_PUNTOS = 220;
 
 function construirCamino(
-  forma: "onda" | "zigzag" | "circulo",
+  forma: "onda" | "zigzag" | "circulo" | "espiral" | "ocho" | "rampa" | "escalera" | "eses" | "bucles" | "diagonal",
   w: number,
   h: number
 ): Punto[] {
   const pts: Punto[] = [];
   const margenX = Math.max(90, w * 0.1);
   const cy = h * 0.55;
+  const PI = Math.PI;
 
   if (forma === "onda") {
     const amp = Math.min(h * 0.14, 130);
     for (let i = 0; i <= N_PUNTOS; i++) {
       const t = i / N_PUNTOS;
-      pts.push({
-        x: margenX + t * (w - 2 * margenX),
-        y: cy + Math.sin(t * Math.PI * 3) * amp,
-      });
+      pts.push({ x: margenX + t * (w - 2 * margenX), y: cy + Math.sin(t * PI * 3) * amp });
     }
   } else if (forma === "zigzag") {
     const amp = Math.min(h * 0.16, 150);
@@ -100,21 +98,105 @@ function construirCamino(
       const t = i / N_PUNTOS;
       const fase = t * picos;
       const tri = 1 - Math.abs((fase % 1) * 2 - 1);
-      const suave =
-        tri * 0.85 + Math.sin(fase * Math.PI) * 0.15 * (tri > 0 ? 1 : 1);
-      pts.push({
-        x: margenX + t * (w - 2 * margenX),
-        y: cy + amp - suave * amp * 2,
-      });
+      const suave = tri * 0.85 + Math.sin(fase * PI) * 0.15 * (tri > 0 ? 1 : 1);
+      pts.push({ x: margenX + t * (w - 2 * margenX), y: cy + amp - suave * amp * 2 });
     }
-  } else {
-    // circulo
+  } else if (forma === "circulo") {
     const r = Math.min(w, h) * 0.3;
     const cx = w / 2;
-    const cyc = h * 0.55;
     for (let i = 0; i <= N_PUNTOS; i++) {
-      const ang = -Math.PI / 2 + (i / N_PUNTOS) * Math.PI * 2;
-      pts.push({ x: cx + Math.cos(ang) * r, y: cyc + Math.sin(ang) * r });
+      const ang = -PI / 2 + (i / N_PUNTOS) * PI * 2;
+      pts.push({ x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r });
+    }
+  } else if (forma === "espiral") {
+    // Espiral que empieza pequeña en el centro y se expande
+    const cx = w / 2;
+    const maxR = Math.min(w, h) * 0.28;
+    const vueltas = 2.5;
+    for (let i = 0; i <= N_PUNTOS; i++) {
+      const t = i / N_PUNTOS;
+      const ang = -PI / 2 + t * PI * 2 * vueltas;
+      const r = maxR * t;
+      pts.push({ x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r });
+    }
+  } else if (forma === "ocho") {
+    // Figura en ocho (lemniscata de Bernoulli adaptada)
+    const cx = w / 2;
+    const rx = Math.min(w * 0.28, 200);
+    const ry = Math.min(h * 0.18, 110);
+    for (let i = 0; i <= N_PUNTOS; i++) {
+      const t = i / N_PUNTOS;
+      const ang = t * PI * 2;
+      // Lemniscata paramétrica simple: dos círculos tangentes
+      const bucle = ang < PI ? 1 : -1;
+      const a2 = ang < PI ? ang : ang - PI;
+      pts.push({
+        x: cx + bucle * rx * Math.cos(a2 - PI / 2),
+        y: cy + ry * Math.sin((a2 - PI / 2) * 2) * 0.5 + bucle * ry * 0.5,
+      });
+    }
+  } else if (forma === "rampa") {
+    // Línea diagonal suave de abajo-izquierda a arriba-derecha con leve curva
+    const amp = Math.min(h * 0.06, 50);
+    for (let i = 0; i <= N_PUNTOS; i++) {
+      const t = i / N_PUNTOS;
+      pts.push({
+        x: margenX + t * (w - 2 * margenX),
+        y: cy + h * 0.2 - t * h * 0.4 + Math.sin(t * PI) * amp,
+      });
+    }
+  } else if (forma === "escalera") {
+    // Escalones: 4 peldaños horizontales con subidas verticales
+    const peldanos = 4;
+    const anchoTotal = w - 2 * margenX;
+    const altoTotal = Math.min(h * 0.32, 200);
+    const anchoPeld = anchoTotal / peldanos;
+    const altoPeld  = altoTotal / peldanos;
+    const yBase = cy + altoTotal / 2;
+    const N_SEG = Math.floor(N_PUNTOS / (peldanos * 2));
+    for (let p = 0; p < peldanos; p++) {
+      const x0 = margenX + p * anchoPeld;
+      const y0 = yBase - p * altoPeld;
+      // Subida vertical
+      for (let i = 0; i <= N_SEG; i++) {
+        const t = i / N_SEG;
+        pts.push({ x: x0, y: y0 - t * altoPeld });
+      }
+      // Tramo horizontal
+      for (let i = 1; i <= N_SEG; i++) {
+        const t = i / N_SEG;
+        pts.push({ x: x0 + t * anchoPeld, y: y0 - altoPeld });
+      }
+    }
+  } else if (forma === "eses") {
+    // Curva S pronunciada (1.5 ciclos, amplitud mayor que onda)
+    const amp = Math.min(h * 0.20, 160);
+    for (let i = 0; i <= N_PUNTOS; i++) {
+      const t = i / N_PUNTOS;
+      pts.push({ x: margenX + t * (w - 2 * margenX), y: cy + Math.sin(t * PI * 2) * amp });
+    }
+  } else if (forma === "bucles") {
+    // Bucles hacia arriba: 4 arcos semicirculares encadenados
+    const bucles = 4;
+    const anchoTotal = w - 2 * margenX;
+    const anchoBucle = anchoTotal / bucles;
+    const r = Math.min(anchoBucle * 0.45, h * 0.16);
+    const N_SEG = Math.floor(N_PUNTOS / bucles);
+    for (let b = 0; b < bucles; b++) {
+      const cx2 = margenX + (b + 0.5) * anchoBucle;
+      for (let i = 0; i <= N_SEG; i++) {
+        const ang = PI + (i / N_SEG) * PI * 2; // bucle completo arriba
+        pts.push({ x: cx2 + Math.cos(ang) * r, y: cy + Math.sin(ang) * r });
+      }
+    }
+  } else {
+    // diagonal: de abajo-izquierda a arriba-derecha, recto
+    for (let i = 0; i <= N_PUNTOS; i++) {
+      const t = i / N_PUNTOS;
+      pts.push({
+        x: margenX + t * (w - 2 * margenX),
+        y: cy + h * 0.22 - t * h * 0.44,
+      });
     }
   }
   return pts;
