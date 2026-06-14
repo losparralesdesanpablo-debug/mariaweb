@@ -29,8 +29,9 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Rutas que requieren autenticación
-  if (request.nextUrl.pathname.startsWith("/padres") && !user) {
+  // Rutas que requieren autenticación (excluir /padres/login para evitar bucle)
+  const esLogin = request.nextUrl.pathname.startsWith("/padres/login");
+  if (request.nextUrl.pathname.startsWith("/padres") && !esLogin && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/padres/login";
     return NextResponse.redirect(url);
