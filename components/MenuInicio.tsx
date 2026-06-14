@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface MenuInicioProps {
-  onJuego: (juego: "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar") => void;
+  onJuego: (juego: "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc") => void;
 }
 
 export default function MenuInicio({ onJuego }: MenuInicioProps) {
@@ -92,6 +92,22 @@ export default function MenuInicio({ onJuego }: MenuInicioProps) {
           sombra="#3BA055"
           textColor="#ffffff"
           onClick={() => onJuego("contar")}
+        />
+        <BotonazoMenu
+          emoji="👂🔢"
+          etiqueta="Escucha el número"
+          color="#4ECDC4"
+          sombra="#2A9D94"
+          textColor="#ffffff"
+          onClick={() => onJuego("escuchar_num")}
+        />
+        <BotonazoMenu
+          emoji="👂🔤"
+          etiqueta="Escucha el vocal"
+          color="#A78BFA"
+          sombra="#6D4FC4"
+          textColor="#ffffff"
+          onClick={() => onJuego("escuchar_voc")}
         />
       </div>
 
