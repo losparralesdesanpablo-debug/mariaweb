@@ -7,10 +7,10 @@ import { pip, fanfarria, hablar } from "./utils";
 import type { JuegoProps } from "./utils";
 
 const PECES = [
-  { id: 0, ix: 10, iy: 25, color: "#FF6B6B", rot: 0   },
-  { id: 1, ix: 80, iy: 20, color: "#FFC93D", rot: 180 },
-  { id: 2, ix: 20, iy: 82, color: "#6BA8FF", rot: 0   },
-  { id: 3, ix: 75, iy: 78, color: "#5BCB77", rot: 180 },
+  { id: 0, ix: 15, iy: 72, color: "#FF6B6B", rot: 0   },
+  { id: 1, ix: 40, iy: 78, color: "#FFC93D", rot: 180 },
+  { id: 2, ix: 65, iy: 72, color: "#6BA8FF", rot: 0   },
+  { id: 3, ix: 85, iy: 78, color: "#5BCB77", rot: 180 },
 ];
 const RIO_Y = 45; // % — zona del río
 
@@ -62,7 +62,7 @@ export default function Juego04Peces({ sonido, voz, onCompletado }: JuegoProps) 
       onPointerUp={soltarDrag}
     >
       <Bocadillo texto="Lleva los peces al río 🐟" />
-      <Estrellita x={30} y={140} size={65} celebrando={celebrando} />
+      <Estrellita x={10} y={150} size={60} celebrando={celebrando} />
 
       {/* Río */}
       <div style={{

@@ -7,11 +7,11 @@ import { pip, fanfarria, hablar } from "./utils";
 import type { JuegoProps } from "./utils";
 
 const INGREDIENTES = [
-  { id: 0, emoji: "⭐", nombre: "estrella",  ix: 15, iy: 30 },
-  { id: 1, emoji: "🍄", nombre: "hongo",     ix: 75, iy: 25 },
-  { id: 2, emoji: "💎", nombre: "cristal",   ix: 45, iy: 22 },
+  { id: 0, emoji: "⭐", nombre: "estrella",  ix: 15, iy: 72 },
+  { id: 1, emoji: "🍄", nombre: "hongo",     ix: 50, iy: 78 },
+  { id: 2, emoji: "💎", nombre: "cristal",   ix: 82, iy: 72 },
 ];
-const OLLA_X = 50; const OLLA_Y = 72;
+const OLLA_X = 50; const OLLA_Y = 42;
 
 export default function Juego06Cocina({ sonido, voz, onCompletado }: JuegoProps) {
   const [paso, setPaso] = useState(0);
