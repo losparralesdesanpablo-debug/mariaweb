@@ -64,6 +64,13 @@ export default function Juego04Peces({ sonido, voz, onCompletado }: JuegoProps) 
       <Bocadillo texto="Lleva los peces al río 🐟" />
       <Estrellita x={10} y={150} size={60} celebrando={celebrando} />
 
+      {/* Orilla inferior */}
+      <div style={{
+        position: "absolute", left: 0, bottom: 0, width: "100%", height: "32%",
+        background: "linear-gradient(180deg, #C8A96E 0%, #A0784A 100%)",
+        pointerEvents: "none",
+      }} />
+
       {/* Río */}
       <div style={{
         position: "absolute", left: 0, top: "35%", width: "100%", height: "30%",
