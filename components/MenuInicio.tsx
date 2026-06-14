@@ -45,13 +45,13 @@ export default function MenuInicio({ onJuego }: MenuInicioProps) {
         </h1>
       </div>
 
-      {/* Grid 2 columnas */}
+      {/* Grid 4 columnas */}
       <div style={{
         display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "clamp(10px, 2vw, 16px)",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: "clamp(8px, 1.5vw, 12px)",
         width: "100%",
-        maxWidth: 600,
+        maxWidth: 700,
         flexShrink: 0,
       }}>
         <BotonazoMenu emoji="✏️"   etiqueta="Trazos"          color="#FFC93D" sombra="#E6A800" textColor="#2A4D69" onClick={() => onJuego("trazos")} />
@@ -95,40 +95,40 @@ function BotonazoMenu({
       onClick={onClick}
       style={{
         width: "100%",
-        minHeight: "clamp(72px, 13vw, 100px)",
+        minHeight: "clamp(64px, 12vw, 90px)",
         border: "none",
-        borderRadius: 24,
+        borderRadius: 20,
         background: color,
-        boxShadow: `0 6px 0 ${sombra}`,
+        boxShadow: `0 5px 0 ${sombra}`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 4,
+        gap: 3,
         cursor: "pointer",
         transition: "transform .1s, box-shadow .1s",
         touchAction: "manipulation",
-        padding: "10px 8px",
+        padding: "8px 4px",
       }}
       onPointerDown={e => {
-        (e.currentTarget as HTMLButtonElement).style.transform = "scale(.96) translateY(4px)";
+        (e.currentTarget as HTMLButtonElement).style.transform = "scale(.96) translateY(3px)";
         (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 2px 0 ${sombra}`;
       }}
       onPointerUp={e => {
         (e.currentTarget as HTMLButtonElement).style.transform = "";
-        (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 6px 0 ${sombra}`;
+        (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 5px 0 ${sombra}`;
       }}
       onPointerLeave={e => {
         (e.currentTarget as HTMLButtonElement).style.transform = "";
-        (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 6px 0 ${sombra}`;
+        (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 5px 0 ${sombra}`;
       }}
     >
-      <span style={{ fontSize: "clamp(28px, 6vw, 40px)", lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: "clamp(22px, 5vw, 32px)", lineHeight: 1 }}>{emoji}</span>
       <span style={{
-        fontSize: "clamp(13px, 2.8vw, 20px)",
+        fontSize: "clamp(10px, 2.2vw, 15px)",
         fontWeight: 900,
         color: textColor,
-        letterSpacing: 0.5,
+        letterSpacing: 0.3,
         textAlign: "center",
         lineHeight: 1.2,
       }}>
