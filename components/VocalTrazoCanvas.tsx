@@ -206,9 +206,10 @@ export default function VocalTrazoCanvas({ sonido, voz, tolerancia_px, porcentaj
   const ultimoTickRef = useRef(0);
 
   function calcCuadro() {
-    const w = Math.min(innerWidth * 0.55, 300);
+    // Cuadro de trazo en la mitad derecha del viewport
+    const w = Math.min(innerWidth * 0.40, 320);
     const h = w * 1.35;
-    const ox = (innerWidth - w) / 2;
+    const ox = innerWidth * 0.55 + (innerWidth * 0.45 - w) / 2;
     const oy = (innerHeight - h) / 2 + innerHeight * 0.04;
     return { ox, oy, w, h };
   }
@@ -299,6 +300,20 @@ export default function VocalTrazoCanvas({ sonido, voz, tolerancia_px, porcentaj
     ctx.save(); ctx.globalAlpha = 0.35;
     for (const t of trazoLibreRef.current) trazar(t, 9, "#FF7A6B");
     ctx.restore();
+
+    // Dedo animado que recorre el path en bucle (solo si no se está dibujando)
+    if (!completadoRef.current && !dibujandoRef.current) {
+      const DURACION_MS = 3500;
+      const t = (Date.now() % DURACION_MS) / DURACION_MS;
+      const idx = Math.min(puntos.length - 1, Math.floor(t * puntos.length));
+      const dedo = puntos[idx];
+      ctx.save();
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.beginPath(); ctx.arc(dedo.x, dedo.y, 26, 0, Math.PI*2); ctx.fill();
+      ctx.font = "38px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("👆", dedo.x, dedo.y + 4);
+      ctx.restore();
+    }
 
     const ini = puntos[0];
     const lat = 1 + Math.sin(Date.now()/280)*0.12;
@@ -411,12 +426,14 @@ export default function VocalTrazoCanvas({ sonido, voz, tolerancia_px, porcentaj
       {/* Canvas */}
       <canvas ref={canvasRef} className="fixed inset-0" style={{touchAction:"none", zIndex:5}} />
 
-      {/* Vocal de referencia (fondo, muy tenue) */}
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none" style={{zIndex:3}}>
+      {/* Letra de referencia (panel izquierdo, grande y visible) */}
+      <div className="fixed left-0 top-0 bottom-0 flex items-center justify-center pointer-events-none"
+        style={{width:"55%", zIndex:3}}>
         <div style={{
-          fontSize: Math.min(innerWidth * 0.52, 280),
+          fontSize: Math.min(innerWidth * 0.32, 360),
           fontWeight: 900,
-          color: "rgba(120,60,180,.07)",
+          color: "#FFFFFF",
+          textShadow: "0 6px 0 rgba(120,60,180,.35), 0 12px 24px rgba(0,0,0,.18)",
           lineHeight: 1,
           fontFamily: "ui-rounded, 'Arial Rounded MT Bold', system-ui, sans-serif",
           userSelect: "none",
