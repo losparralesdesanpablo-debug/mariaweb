@@ -214,6 +214,15 @@ export default function VocalTrazoCanvas({ sonido, voz, tolerancia_px, porcentaj
     return { ox, oy, w, h };
   }
 
+  function calcCuadroRef() {
+    // Cuadro de la letra de referencia (panel izquierdo, mismas proporciones)
+    const w = Math.min(innerWidth * 0.40, 360);
+    const h = w * 1.35;
+    const ox = (innerWidth * 0.55 - w) / 2;
+    const oy = (innerHeight - h) / 2 + innerHeight * 0.04;
+    return { ox, oy, w, h };
+  }
+
   const calcPorcentaje = useCallback(() => {
     const v = visitadosRef.current.filter(Boolean).length;
     return (v / visitadosRef.current.length) * 100;
@@ -281,6 +290,14 @@ export default function VocalTrazoCanvas({ sonido, voz, tolerancia_px, porcentaj
       for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
       ctx.stroke();
     };
+
+    // Letra de referencia (panel izquierdo): mismos paths, en blanco macizo
+    const refCuadro = calcCuadroRef();
+    const ptsRef = vocalCamino(VOCALES[vocalIdxRef.current], refCuadro.ox, refCuadro.oy, refCuadro.w, refCuadro.h);
+    ctx.save();
+    trazar(ptsRef, GROSOR + 14, "rgba(120,60,180,.25)"); // sombra
+    trazar(ptsRef, GROSOR + 4, "#FFFFFF");                // letra blanca gruesa
+    ctx.restore();
 
     trazar(puntos, GROSOR + 10, "#D8B4FE");
     trazar(puntos, GROSOR, "#FFFFFF");
@@ -388,8 +405,6 @@ export default function VocalTrazoCanvas({ sonido, voz, tolerancia_px, porcentaj
     };
   }, [dibujar, onPointerDown, onPointerMove, onPointerUp, redimensionar]);
 
-  const vocal = VOCALES[vocalIdx];
-
   return (
     <>
       {/* Fondo */}
@@ -425,22 +440,6 @@ export default function VocalTrazoCanvas({ sonido, voz, tolerancia_px, porcentaj
 
       {/* Canvas */}
       <canvas ref={canvasRef} className="fixed inset-0" style={{touchAction:"none", zIndex:5}} />
-
-      {/* Letra de referencia (panel izquierdo, grande y visible) */}
-      <div className="fixed left-0 top-0 bottom-0 flex items-center justify-center pointer-events-none"
-        style={{width:"55%", zIndex:3}}>
-        <div style={{
-          fontSize: Math.min(innerWidth * 0.32, 360),
-          fontWeight: 900,
-          color: "#FFFFFF",
-          textShadow: "0 6px 0 rgba(120,60,180,.35), 0 12px 24px rgba(0,0,0,.18)",
-          lineHeight: 1,
-          fontFamily: "ui-rounded, 'Arial Rounded MT Bold', system-ui, sans-serif",
-          userSelect: "none",
-        }}>
-          {vocal}
-        </div>
-      </div>
 
       {/* Pantalla celebración */}
       {fiestaVisible && (

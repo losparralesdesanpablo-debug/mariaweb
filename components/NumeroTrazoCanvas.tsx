@@ -217,6 +217,15 @@ export default function NumeroTrazoCanvas({ config, onVolver }: NumeroTrazoProps
     return { ox, oy, w, h };
   }
 
+  function calcCuadroRef() {
+    // Cuadro del número de referencia (panel izquierdo)
+    const w = Math.min(innerWidth * 0.40, 360);
+    const h = w * 1.35;
+    const ox = (innerWidth * 0.55 - w) / 2;
+    const oy = (innerHeight - h) / 2 + innerHeight * 0.04;
+    return { ox, oy, w, h };
+  }
+
   const calcPorcentaje = useCallback(() => {
     const v = visitadosRef.current.filter(Boolean).length;
     return (v / visitadosRef.current.length) * 100;
@@ -286,6 +295,14 @@ export default function NumeroTrazoCanvas({ config, onVolver }: NumeroTrazoProps
       for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
       ctx.stroke();
     };
+
+    // Número de referencia (panel izquierdo): mismos paths, en blanco macizo
+    const refCuadro = calcCuadroRef();
+    const ptsRef = numeroCamino(DIGITOS[digitoIdxRef.current], refCuadro.ox, refCuadro.oy, refCuadro.w, refCuadro.h);
+    ctx.save();
+    trazar(ptsRef, GROSOR + 14, "rgba(255,140,0,.35)"); // sombra naranja
+    trazar(ptsRef, GROSOR + 4, "#FFFFFF");
+    ctx.restore();
 
     trazar(puntos, GROSOR + 10, "#BFE0F2");
     trazar(puntos, GROSOR, "#FFFFFF");
@@ -398,8 +415,6 @@ export default function NumeroTrazoCanvas({ config, onVolver }: NumeroTrazoProps
     };
   }, [dibujar, onPointerDown, onPointerMove, onPointerUp, redimensionar]);
 
-  const digito = DIGITOS[digitoIdx];
-
   return (
     <>
       {/* Fondo */}
@@ -436,21 +451,6 @@ export default function NumeroTrazoCanvas({ config, onVolver }: NumeroTrazoProps
       {/* Canvas */}
       <canvas ref={canvasRef} className="fixed inset-0" style={{touchAction:"none", zIndex:5}} />
 
-      {/* Número de referencia (panel izquierdo, grande y visible) */}
-      <div className="fixed left-0 top-0 bottom-0 flex items-center justify-center pointer-events-none"
-        style={{width:"55%", zIndex:3}}>
-        <div style={{
-          fontSize: Math.min(innerWidth * 0.32, 360),
-          fontWeight: 900,
-          color: "#FFFFFF",
-          textShadow: "0 6px 0 rgba(255,140,0,.45), 0 12px 24px rgba(0,0,0,.18)",
-          lineHeight: 1,
-          fontFamily: "ui-rounded, 'Arial Rounded MT Bold', system-ui, sans-serif",
-          userSelect: "none",
-        }}>
-          {digito}
-        </div>
-      </div>
 
       {/* Pantalla celebración */}
       {fiestaVisible && (
