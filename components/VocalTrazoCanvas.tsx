@@ -101,44 +101,69 @@ function concat(...arrays: Punto[][]): Punto[] {
 }
 
 // Construye el camino de la vocal `v` dentro del rectángulo (ox,oy,w,h)
-function vocalCamino(v: "A"|"E"|"I"|"O"|"U", ox:number, oy:number, w:number, h:number): Punto[] {
+function vocalCamino(v: "a"|"e"|"i"|"o"|"u", ox:number, oy:number, w:number, h:number): Punto[] {
   const PI = Math.PI;
   const cx = ox+w/2;
-  const T=oy, B=oy+h, L=ox, R=ox+w, MX=ox+w/2, MY=oy+h/2;
+  const T=oy, B=oy+h;
 
   switch(v) {
-    case "A":
-      // Palo izquierdo subiendo + palo derecho bajando + travesaño
+    case "a": {
+      // Bucle circular grande + palo recto a la derecha (separado del círculo)
+      const xTop = T + h * 0.30;
+      const xBot = B - h * 0.05;
+      const cyC  = (xTop + xBot) / 2;
+      const rx   = w * 0.28;
+      const ry   = (xBot - xTop) / 2;
+      const cCirc = cx - w * 0.05;        // círculo desplazado a la izquierda
+      const palX  = cCirc + rx + w * 0.04; // palo separado del círculo
       return concat(
-        segmento(L+w*0.05, B, MX, T),
-        segmento(MX, T, R-w*0.05, B),
-        segmento(L+w*0.25, MY+h*0.08, R-w*0.25, MY+h*0.08)
+        arco(cCirc, cyC, rx, ry, -PI/2, PI*1.5, N*4),
+        segmento(palX, xTop, palX, xBot)
       );
-    case "E":
-      // Palo vertical + techo + travesaño + base
+    }
+    case "e": {
+      // Travesaño horizontal + arco (abre por la derecha-abajo)
+      const xTop = T + h * 0.30;
+      const xBot = B - h * 0.05;
+      const cyC  = (xTop + xBot) / 2;
+      const rx   = w * 0.32;
+      const ry   = (xBot - xTop) / 2;
       return concat(
-        segmento(R-w*0.1, T, L+w*0.1, T),
-        segmento(L+w*0.1, T, L+w*0.1, B),
-        segmento(L+w*0.1, MY, MX+w*0.1, MY),
-        segmento(L+w*0.1, B, R-w*0.1, B)
+        segmento(cx - rx*0.9, cyC, cx + rx*0.85, cyC),
+        arco(cx, cyC, rx, ry, 0, PI*1.35, N*3)
       );
-    case "I":
-      // Techo + palo vertical + base
+    }
+    case "i": {
+      // Punto bien arriba y separado + palo vertical
+      const puntoY = T + h * 0.15;
+      const xTop   = T + h * 0.32;
+      const xBot   = B - h * 0.05;
       return concat(
-        segmento(L+w*0.25, T, R-w*0.25, T),
-        segmento(MX, T, MX, B),
-        segmento(L+w*0.25, B, R-w*0.25, B)
+        arco(cx, puntoY, w*0.09, h*0.06, 0, PI*2, N),
+        segmento(cx, xTop, cx, xBot)
       );
-    case "O":
-      // Elipse completa, empieza arriba
-      return arco(cx, MY, w*0.42, h*0.48, -PI/2, PI*1.5, N*4);
-    case "U":
+    }
+    case "o": {
+      // Círculo grande en la zona de la x-height
+      const xTop = T + h * 0.30;
+      const xBot = B - h * 0.05;
+      const cyC  = (xTop + xBot) / 2;
+      const rx   = w * 0.36;
+      const ry   = (xBot - xTop) / 2;
+      return arco(cx, cyC, rx, ry, -PI/2, PI*1.5, N*4);
+    }
+    case "u": {
       // Palo izquierdo + curva inferior + palo derecho
+      const xTop = T + h * 0.30;
+      const xBot = B - h * 0.05;
+      const rx   = w * 0.26;
+      const ry   = h * 0.14;
       return concat(
-        segmento(L+w*0.12, T, L+w*0.12, B-h*0.3),
-        arco(cx, B-h*0.3, w*0.38, h*0.28, PI, 0),
-        segmento(R-w*0.12, B-h*0.3, R-w*0.12, T)
+        segmento(cx - rx, xTop, cx - rx, xBot - ry),
+        arco(cx, xBot - ry, rx, ry, PI, 0),
+        segmento(cx + rx, xBot - ry, cx + rx, xBot)
       );
+    }
     default:
       return [];
   }
@@ -156,10 +181,10 @@ interface VocalTrazoProps {
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 
-const VOCALES: ("A"|"E"|"I"|"O"|"U")[] = ["A","E","I","O","U"];
+const VOCALES: ("a"|"e"|"i"|"o"|"u")[] = ["a","e","i","o","u"];
 const FRASES  = ["a","e","i","o","u"];
 
-const GROSOR = 52;
+const GROSOR = 40;
 
 export default function VocalTrazoCanvas({ sonido, voz, tolerancia_px, porcentaje_para_completar, onVolver }: VocalTrazoProps) {
   const canvasRef  = useRef<HTMLCanvasElement>(null);

@@ -6,6 +6,7 @@ import { pip, fanfarria, hablar } from "./aventura/utils";
 interface MasMenosProps {
   sonido: boolean;
   voz: boolean;
+  nivel?: 1 | 2 | 3;
   onVolver: (completado: boolean) => void;
 }
 

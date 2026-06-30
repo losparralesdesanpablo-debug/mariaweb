@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase-server";
 import ZonaNina from "@/components/ZonaNina";
-import type { Actividad, ConfiguracionNino, Nino, VideoPremio } from "@/lib/types";
+import type { Actividad, ConfiguracionNino, Nino, VideoPremio, Palabra, PalabraProgreso } from "@/lib/types";
 import { CONFIG_DEFAULT } from "@/lib/types";
 
 export default async function HomePage() {
@@ -24,6 +24,8 @@ export default async function HomePage() {
   let ninoNombre = "María";
   let ninoPin: string | null = null;
   let videos: VideoPremio[] = [];
+  let palabras: Palabra[] = [];
+  let palabrasProgreso: PalabraProgreso[] = [];
 
   if (user) {
     const { data: ninos } = await supabase
@@ -47,6 +49,22 @@ export default async function HomePage() {
         .eq("activo", true)
         .order("orden");
       videos = (vData as VideoPremio[]) ?? [];
+
+      // Palabras de lectura activas
+      const { data: pData } = await supabase
+        .from("palabras")
+        .select("*")
+        .eq("nino_id", ninoId)
+        .eq("activa", true)
+        .order("orden");
+      palabras = (pData as Palabra[]) ?? [];
+
+      // Progreso de lectura
+      const { data: ppData } = await supabase
+        .from("palabras_progreso")
+        .select("*")
+        .eq("nino_id", ninoId);
+      palabrasProgreso = (ppData as PalabraProgreso[]) ?? [];
     }
   }
 
@@ -58,6 +76,8 @@ export default async function HomePage() {
       ninoNombre={ninoNombre}
       ninoPin={ninoPin}
       videos={videos}
+      palabras={palabras}
+      palabrasProgreso={palabrasProgreso}
     />
   );
 }

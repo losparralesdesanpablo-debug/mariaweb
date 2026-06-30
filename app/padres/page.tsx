@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase-server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import PadresDashboard from "./PadresDashboard";
-import type { Nino, ResumenProgreso, VideoPremio } from "@/lib/types";
+import type { Nino, ResumenProgreso, VideoPremio, Palabra, PalabraProgreso } from "@/lib/types";
 
 export default async function PadresPage() {
   const supabase = await createClient();
@@ -59,6 +59,21 @@ export default async function PadresPage() {
     .order("orden");
   const videos = (videosData as VideoPremio[]) ?? [];
 
+  // Palabras y progreso de lectura
+  let palabras: Palabra[] = [];
+  let palabrasProgreso: PalabraProgreso[] = [];
+  if (ninoIds.length > 0) {
+    const { data: pData } = await supabase
+      .from("palabras").select("*")
+      .in("nino_id", ninoIds).order("orden");
+    palabras = (pData as Palabra[]) ?? [];
+
+    const { data: ppData } = await supabase
+      .from("palabras_progreso").select("*")
+      .in("nino_id", ninoIds);
+    palabrasProgreso = (ppData as PalabraProgreso[]) ?? [];
+  }
+
   return (
     <PadresDashboard
       user={user}
@@ -66,6 +81,8 @@ export default async function PadresPage() {
       progreso={progreso}
       admins={admins}
       videos={videos}
+      palabras={palabras}
+      palabrasProgreso={palabrasProgreso}
     />
   );
 }

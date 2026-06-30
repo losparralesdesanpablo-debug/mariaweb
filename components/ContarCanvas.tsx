@@ -23,6 +23,7 @@ const MAX_NUMERO = 5;
 interface ContarJuegoProps {
   sonido: boolean;
   voz: boolean;
+  nivel?: 1 | 2 | 3;
   onVolver: (completado: boolean) => void;
 }
 
@@ -70,6 +71,7 @@ export default function ContarCanvas({ sonido, voz, onVolver }: ContarJuegoProps
   const [ronda, setRonda]         = useState(() => generarRonda());
   const [estado, setEstado]       = useState<"jugando" | "correcto" | "error">("jugando");
   const [opcionError, setOpcionError] = useState<number | null>(null);
+  const [mensajeError, setMensajeError] = useState<string>("");
   const [racha, setRacha]         = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -86,7 +88,6 @@ export default function ContarCanvas({ sonido, voz, onVolver }: ContarJuegoProps
     limpiarTimer();
 
     if (n === ronda.cantidad) {
-      // Correcto
       setEstado("correcto");
       if (sonido) fanfarria();
       if (voz) setTimeout(() => hablar(`¡Sí! ${ronda.cantidad} ${ronda.obj.nombre}`), 300);
@@ -95,16 +96,22 @@ export default function ContarCanvas({ sonido, voz, onVolver }: ContarJuegoProps
         setRonda(generarRonda());
         setEstado("jugando");
         setOpcionError(null);
+        setMensajeError("");
       }, 1800);
     } else {
-      // Error
+      const esMayor = n > ronda.cantidad;
+      const pista = esMayor ? "es demasiado grande" : "es demasiado pequeño";
+      const msg = `${n} ${pista}`;
       setOpcionError(n);
+      setMensajeError(esMayor ? `El ${n} es muy grande` : `El ${n} es muy pequeño`);
       setEstado("error");
       if (sonido) pip(160, 0.3, 0.18, "sawtooth");
+      if (voz) setTimeout(() => hablar(msg), 150);
       timerRef.current = setTimeout(() => {
         setEstado("jugando");
         setOpcionError(null);
-      }, 700);
+        setMensajeError("");
+      }, 2000);
     }
   }
 
@@ -185,12 +192,12 @@ export default function ContarCanvas({ sonido, voz, onVolver }: ContarJuegoProps
             left: `${p.x}%`,
             top: `${p.y}%`,
             transform: `translate(-50%,-50%) rotate(${p.rot}deg) scale(${p.scale})`,
-            fontSize: "clamp(48px, 10vw, 72px)",
+            fontSize: "clamp(72px, 16vw, 110px)",
             pointerEvents: "none",
             userSelect: "none",
             filter: estado === "correcto"
-              ? "drop-shadow(0 0 12px rgba(91,203,119,.9))"
-              : "drop-shadow(0 3px 6px rgba(0,0,0,.15))",
+              ? "drop-shadow(0 0 14px rgba(91,203,119,.9))"
+              : "drop-shadow(0 4px 8px rgba(0,0,0,.18))",
             transition: "filter .3s",
             zIndex: 5,
           }}
@@ -202,7 +209,7 @@ export default function ContarCanvas({ sonido, voz, onVolver }: ContarJuegoProps
       {/* Botones de números */}
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0,
-        padding: "16px 20px 28px",
+        padding: "16px 20px 32px",
         display: "flex", gap: 14, justifyContent: "center",
         background: "linear-gradient(0deg, rgba(100,170,230,.55) 0%, transparent 100%)",
         zIndex: 20,
@@ -211,38 +218,54 @@ export default function ContarCanvas({ sonido, voz, onVolver }: ContarJuegoProps
           const esCorrecto = estado === "correcto" && n === cantidad;
           const esError    = opcionError === n;
           return (
-            <button
-              key={n}
-              onPointerDown={() => tocarOpcion(n)}
-              style={{
-                flex: 1,
-                maxWidth: 130,
-                height: "clamp(90px, 16vw, 120px)",
-                border: "none",
-                borderRadius: 28,
-                fontSize: "clamp(44px, 9vw, 68px)",
-                fontWeight: 900,
-                cursor: "pointer",
-                touchAction: "none",
-                transition: "transform .15s, background .15s, box-shadow .15s",
-                background: esCorrecto
-                  ? "#5BCB77"
-                  : esError
-                    ? "#FF5555"
-                    : "rgba(255,255,255,.85)",
-                color: esCorrecto || esError ? "white" : "#2A4D69",
-                boxShadow: esCorrecto
-                  ? "0 6px 0 #3BA055"
-                  : esError
-                    ? "0 6px 0 #CC2222"
-                    : "0 6px 0 rgba(0,0,0,.18)",
-                transform: esCorrecto ? "scale(1.12) translateY(-4px)"
-                           : esError   ? "scale(.94) translateY(4px)"
-                           : "scale(1)",
-              }}
-            >
-              {n}
-            </button>
+            <div key={n} style={{ flex: 1, maxWidth: 140, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+              {/* Bocadillo de pista (solo en el botón erróneo) */}
+              {esError && mensajeError && (
+                <div style={{
+                  background: "#FF5555",
+                  color: "white",
+                  borderRadius: 16,
+                  padding: "6px 14px",
+                  fontSize: "clamp(13px, 2.8vw, 17px)",
+                  fontWeight: 800,
+                  whiteSpace: "nowrap",
+                  boxShadow: "0 3px 0 #CC2222",
+                  animation: "popIn .25s cubic-bezier(.34,1.56,.64,1)",
+                }}>
+                  {mensajeError}
+                </div>
+              )}
+              <button
+                onPointerDown={() => tocarOpcion(n)}
+                style={{
+                  width: "100%",
+                  height: "clamp(100px, 18vw, 130px)",
+                  border: "none",
+                  borderRadius: 28,
+                  fontSize: "clamp(52px, 11vw, 80px)",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  touchAction: "none",
+                  transition: "transform .15s, background .15s, box-shadow .15s",
+                  background: esCorrecto
+                    ? "#5BCB77"
+                    : esError
+                      ? "#FF5555"
+                      : "rgba(255,255,255,.85)",
+                  color: esCorrecto || esError ? "white" : "#2A4D69",
+                  boxShadow: esCorrecto
+                    ? "0 6px 0 #3BA055"
+                    : esError
+                      ? "0 6px 0 #CC2222"
+                      : "0 6px 0 rgba(0,0,0,.18)",
+                  transform: esCorrecto ? "scale(1.12) translateY(-4px)"
+                             : esError   ? "scale(.94) translateY(4px)"
+                             : "scale(1)",
+                }}
+              >
+                {n}
+              </button>
+            </div>
           );
         })}
       </div>

@@ -319,6 +319,7 @@ export default function TrazoCanvas({
   const visitadosRef = useRef<boolean[]>([]);
   const trazoLibreRef = useRef<Punto[][]>([]);
   const dibujandoRef = useRef(false);
+  const pointerActivoRef = useRef<number | null>(null); // palm rejection: solo un puntero
   const completadoRef = useRef(false);
   const algunaVezRef  = useRef(false);
   const metricasRef = useRef<Metricas | null>(null);
@@ -516,6 +517,8 @@ export default function TrazoCanvas({
       completadoRef.current = false;
       metricasRef.current = null;
       ultimoTickPctRef.current = 0;
+      dibujandoRef.current = false;
+      pointerActivoRef.current = null;
       setNivelActual(i);
       setFiestaVisible(false);
       if (conVoz && config.voz)
@@ -547,6 +550,12 @@ export default function TrazoCanvas({
       e.preventDefault();
       getAudio(); // desbloquea WebAudio en iOS en el primer gesto
       if (completadoRef.current) return;
+
+      // Palm rejection: ignorar contactos con área grande (muñeca) o si ya hay trazo activo
+      if (e.width > 40) return;
+      if (pointerActivoRef.current !== null && pointerActivoRef.current !== e.pointerId) return;
+
+      pointerActivoRef.current = e.pointerId;
       dibujandoRef.current = true;
       (e.target as HTMLCanvasElement).setPointerCapture(e.pointerId);
 
@@ -570,6 +579,8 @@ export default function TrazoCanvas({
   const onPointerMove = useCallback(
     (e: PointerEvent) => {
       if (!dibujandoRef.current || completadoRef.current) return;
+      if (e.pointerId !== pointerActivoRef.current) return;
+      if (e.width > 40) return;
       e.preventDefault();
       const eventos = e.getCoalescedEvents?.() ?? [e];
       const trazo = trazoLibreRef.current[trazoLibreRef.current.length - 1];
@@ -583,6 +594,9 @@ export default function TrazoCanvas({
 
   const onPointerUp = useCallback((e: PointerEvent) => {
     e.preventDefault();
+    if (e.pointerId === pointerActivoRef.current) {
+      pointerActivoRef.current = null;
+    }
     dibujandoRef.current = false;
   }, []);
 

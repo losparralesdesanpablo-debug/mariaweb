@@ -24,11 +24,11 @@ export default function AjustesPanel({ nino }: AjustesPanelProps) {
     setMsg("");
     const supabase = createClient();
     const nuevaCfg: ConfiguracionNino = {
+      ...cfg,
       tolerancia_px: tolerancia,
       porcentaje_para_completar: pctCompletar,
       sonido,
       voz,
-      juegos_para_premio: cfg.juegos_para_premio,
     };
     const { error } = await supabase
       .from("ninos")

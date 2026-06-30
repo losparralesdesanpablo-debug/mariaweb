@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
-import type { Nino, ConfiguracionNino } from "@/lib/types";
-import { CONFIG_DEFAULT } from "@/lib/types";
+import type { Nino, ConfiguracionNino, JuegoId } from "@/lib/types";
+import { CONFIG_DEFAULT, JUEGOS_CATALOGO } from "@/lib/types";
 
 interface Props {
   ninos: Nino[];
@@ -180,6 +180,112 @@ export default function PanelUsuarias({ ninos: inicial, userId }: Props) {
             <div className="flex gap-6 mt-1">
               <Toggle label="🔊 Sonido" value={cfg.sonido} onChange={v => setCfg(c => ({ ...c, sonido: v }))} />
               <Toggle label="🗣️ Voz" value={cfg.voz} onChange={v => setCfg(c => ({ ...c, voz: v }))} />
+            </div>
+          </div>
+
+          {/* Juegos disponibles */}
+          <div className="rounded-2xl p-4 flex flex-col gap-3"
+            style={{ background: "rgba(234,246,255,0.6)" }}>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <p className="font-bold text-sm" style={{ color: "#8AA7BC" }}>JUEGOS DISPONIBLES</p>
+              <div className="flex gap-2">
+                <button type="button"
+                  className="btn-padres secundario"
+                  style={{ padding: "4px 12px", fontSize: 12 }}
+                  onClick={() => setCfg(c => ({
+                    ...c,
+                    juegos_activos: Object.fromEntries(JUEGOS_CATALOGO.map(j => [j.id, true])) as Record<JuegoId, boolean>,
+                  }))}>
+                  Activar todos
+                </button>
+                <button type="button"
+                  className="btn-padres secundario"
+                  style={{ padding: "4px 12px", fontSize: 12 }}
+                  onClick={() => setCfg(c => ({
+                    ...c,
+                    juegos_activos: Object.fromEntries(JUEGOS_CATALOGO.map(j => [j.id, false])) as Record<JuegoId, boolean>,
+                  }))}>
+                  Desactivar todos
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {JUEGOS_CATALOGO.map(juego => {
+                const activo = cfg.juegos_activos?.[juego.id] !== false;
+                const nivel  = cfg.juegos_nivel?.[juego.id] ?? 1;
+                return (
+                  <div key={juego.id}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2"
+                    style={{ background: activo ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.35)" }}>
+
+                    {/* Toggle activo */}
+                    <div
+                      className="cursor-pointer flex-shrink-0"
+                      onClick={() => setCfg(c => ({
+                        ...c,
+                        juegos_activos: {
+                          ...(c.juegos_activos ?? {}),
+                          [juego.id]: !activo,
+                        } as Record<JuegoId, boolean>,
+                      }))}
+                    >
+                      <div style={{
+                        width: 40, height: 24, borderRadius: 12,
+                        background: activo ? "#5BCB77" : "#BFE0F2",
+                        position: "relative", transition: "background .2s", flexShrink: 0,
+                      }}>
+                        <span style={{
+                          position: "absolute", top: 2, left: activo ? 18 : 2,
+                          width: 20, height: 20, borderRadius: "50%", background: "#fff",
+                          boxShadow: "0 1px 3px rgba(0,0,0,.15)", transition: "left .2s",
+                        }} />
+                      </div>
+                    </div>
+
+                    {/* Emoji + nombre */}
+                    <span style={{ fontSize: 20, flexShrink: 0 }}>{juego.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-semibold"
+                        style={{ color: activo ? "#2A4D69" : "#8AA7BC" }}>
+                        {juego.label}
+                      </span>
+                      <span className="text-xs ml-2" style={{ color: "#B0C8D8" }}>
+                        +{juego.edadMin} años
+                      </span>
+                    </div>
+
+                    {/* Selector nivel (solo si tiene dificultad) */}
+                    {juego.tieneDificultad && (
+                      <div className="flex gap-1 flex-shrink-0">
+                        {([1, 2, 3] as const).map(n => (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => setCfg(c => ({
+                              ...c,
+                              juegos_nivel: {
+                                ...(c.juegos_nivel ?? {}),
+                                [juego.id]: n,
+                              } as Record<JuegoId, 1 | 2 | 3>,
+                            }))}
+                            style={{
+                              width: 30, height: 30, borderRadius: 8, border: "none",
+                              fontSize: 13, fontWeight: 800, cursor: "pointer",
+                              background: nivel === n ? "#2A4D69" : "rgba(255,255,255,0.7)",
+                              color: nivel === n ? "#fff" : "#8AA7BC",
+                              boxShadow: nivel === n ? "0 2px 0 rgba(42,77,105,.25)" : "none",
+                              opacity: activo ? 1 : 0.4,
+                            }}
+                          >
+                            {n}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

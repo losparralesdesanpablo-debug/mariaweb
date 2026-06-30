@@ -17,11 +17,12 @@ import FaltaCanvas from "./FaltaCanvas";
 import MasMenosCanvas from "./MasMenosCanvas";
 import SumarCanvas from "./SumarCanvas";
 import AntesDepuesCanvas from "./AntesDepuesCanvas";
+import LecturaCanvas from "./LecturaCanvas";
 import { setNinoId, iniciarReintentoCola } from "@/lib/trazo-store";
-import type { Actividad, ConfiguracionNino, VideoPremio } from "@/lib/types";
+import type { Actividad, ConfiguracionNino, VideoPremio, Palabra, PalabraProgreso } from "@/lib/types";
 import { CONFIG_DEFAULT } from "@/lib/types";
 
-type Modo = "pin" | "menu" | "video" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues";
+type Modo = "pin" | "menu" | "video" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues" | "lectura";
 
 interface ZonaNinaProps {
   actividades: Actividad[];
@@ -30,6 +31,8 @@ interface ZonaNinaProps {
   ninoNombre: string;
   ninoPin: string | null;
   videos: VideoPremio[];
+  palabras: Palabra[];
+  palabrasProgreso: PalabraProgreso[];
 }
 
 const VIDEO_FALLBACK: VideoPremio = {
@@ -46,7 +49,7 @@ function videosAleatorio(videos: VideoPremio[]): VideoPremio {
   return lista[Math.floor(Math.random() * lista.length)];
 }
 
-export default function ZonaNina({ actividades, config, ninoId, ninoNombre, ninoPin, videos }: ZonaNinaProps) {
+export default function ZonaNina({ actividades, config, ninoId, ninoNombre, ninoPin, videos, palabras, palabrasProgreso }: ZonaNinaProps) {
   const [modo, setModo] = useState<Modo>(ninoPin ? "pin" : "menu");
   const [actividadIdMap] = useState<Map<string, string>>(() => {
     const m = new Map<string, string>();
@@ -54,6 +57,9 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
     return m;
   });
   const juegosPara = (config.juegos_para_premio ?? CONFIG_DEFAULT.juegos_para_premio) || 5;
+  function nivel(id: string): 1 | 2 | 3 {
+    return (config.juegos_nivel?.[id as keyof typeof config.juegos_nivel] ?? 1) as 1 | 2 | 3;
+  }
   const contadorRef = useRef(0);
   const [contadorVisible, setContadorVisible] = useState(0);
   const [videoPremio, setVideoPremio] = useState<VideoPremio | null>(null);
@@ -108,7 +114,13 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
     );
   }
   if (modo === "menu") {
-    return <MenuInicio onJuego={setModo} contador={contadorVisible} umbral={juegosPara} onPremio={() => { contadorRef.current = 0; setContadorVisible(0); setVideoPremio(videosAleatorio(videos)); setModo("video"); }} />;
+    return <MenuInicio
+      onJuego={setModo}
+      contador={contadorVisible}
+      umbral={juegosPara}
+      onPremio={() => { contadorRef.current = 0; setContadorVisible(0); setVideoPremio(videosAleatorio(videos)); setModo("video"); }}
+      juegosActivos={config.juegos_activos ?? {}}
+    />;
   }
   if (modo === "trazos") {
     return (
@@ -169,19 +181,31 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
     );
   }
   if (modo === "ordenar") {
-    return <OrdenarCanvas sonido={config.sonido} voz={config.voz} onVolver={juegoCompletado} />;
+    return <OrdenarCanvas sonido={config.sonido} voz={config.voz} nivel={nivel("ordenar")} onVolver={juegoCompletado} />;
   }
   if (modo === "falta") {
-    return <FaltaCanvas sonido={config.sonido} voz={config.voz} onVolver={juegoCompletado} />;
+    return <FaltaCanvas sonido={config.sonido} voz={config.voz} nivel={nivel("falta")} onVolver={juegoCompletado} />;
   }
   if (modo === "masomenos") {
-    return <MasMenosCanvas sonido={config.sonido} voz={config.voz} onVolver={juegoCompletado} />;
+    return <MasMenosCanvas sonido={config.sonido} voz={config.voz} nivel={nivel("masomenos")} onVolver={juegoCompletado} />;
   }
   if (modo === "sumar") {
-    return <SumarCanvas sonido={config.sonido} voz={config.voz} onVolver={juegoCompletado} />;
+    return <SumarCanvas sonido={config.sonido} voz={config.voz} nivel={nivel("sumar")} onVolver={juegoCompletado} />;
   }
   if (modo === "antesdespues") {
-    return <AntesDepuesCanvas sonido={config.sonido} voz={config.voz} onVolver={juegoCompletado} />;
+    return <AntesDepuesCanvas sonido={config.sonido} voz={config.voz} nivel={nivel("antesdespues")} onVolver={juegoCompletado} />;
+  }
+  if (modo === "lectura") {
+    return (
+      <LecturaCanvas
+        palabras={palabras}
+        progreso={palabrasProgreso}
+        ninoId={ninoId ?? ""}
+        sonido={config.sonido}
+        voz={config.voz}
+        onVolver={juegoCompletado}
+      />
+    );
   }
   if (modo === "pronunciar") {
     return (
@@ -197,6 +221,7 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
       <ContarCanvas
         sonido={config.sonido}
         voz={config.voz}
+        nivel={nivel("contar")}
         onVolver={juegoCompletado}
       />
     );

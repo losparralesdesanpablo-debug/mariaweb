@@ -4,15 +4,19 @@ import { useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface MenuInicioProps {
-  onJuego: (juego: "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues") => void;
+  onJuego: (juego: "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues" | "lectura") => void;
   contador: number;
   umbral: number;
   onPremio: () => void;
+  juegosActivos: Record<string, boolean>;
 }
 
-export default function MenuInicio({ onJuego, contador, umbral, onPremio }: MenuInicioProps) {
+export default function MenuInicio({ onJuego, contador, umbral, onPremio, juegosActivos }: MenuInicioProps) {
   const router = useRouter();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Helper: devuelve true si el juego está activo (default: true si no está en el mapa)
+  function activo(id: string) { return juegosActivos[id] !== false; }
 
   function iniciarLargo() {
     timerRef.current = setTimeout(() => router.push("/padres"), 3000);
@@ -62,20 +66,21 @@ export default function MenuInicio({ onJuego, contador, umbral, onPremio }: Menu
         maxWidth: 700,
         flexShrink: 0,
       }}>
-        <BotonazoMenu emoji="✏️"   etiqueta="Trazos"          color="#FFC93D" sombra="#E6A800" textColor="#2A4D69" onClick={() => onJuego("trazos")} />
-        <BotonazoMenu emoji="🎨"   etiqueta="Colorear"        color="#5BCB77" sombra="#3BA055" textColor="#ffffff" onClick={() => onJuego("colorear")} />
-        <BotonazoMenu emoji="⭐"   etiqueta="Aventura"        color="#6BA8FF" sombra="#3A72CC" textColor="#ffffff" onClick={() => onJuego("aventura")} />
-        <BotonazoMenu emoji="🔢"   etiqueta="Números"         color="#FF8C42" sombra="#CC6010" textColor="#ffffff" onClick={() => onJuego("numeros")} />
-        <BotonazoMenu emoji="🔤"   etiqueta="Vocales"         color="#C792EA" sombra="#8A4FBF" textColor="#ffffff" onClick={() => onJuego("vocales")} />
-        <BotonazoMenu emoji="🧮"   etiqueta="Contar"          color="#26C6DA" sombra="#0097A7" textColor="#ffffff" onClick={() => onJuego("contar")} />
-        <BotonazoMenu emoji="👂🔢" etiqueta="Escucha número"  color="#4ECDC4" sombra="#2A9D94" textColor="#ffffff" onClick={() => onJuego("escuchar_num")} />
-        <BotonazoMenu emoji="👂🔤" etiqueta="Escucha vocal"   color="#A78BFA" sombra="#6D4FC4" textColor="#ffffff" onClick={() => onJuego("escuchar_voc")} />
-        <BotonazoMenu emoji="🎙️"  etiqueta="Pronunciar"      color="#2ECC71" sombra="#1A9E55" textColor="#ffffff" onClick={() => onJuego("pronunciar")} />
-        <BotonazoMenu emoji="🔢"  etiqueta="Ordenar"         color="#FF6B6B" sombra="#CC3333" textColor="#ffffff" onClick={() => onJuego("ordenar")} />
-        <BotonazoMenu emoji="🔍"  etiqueta="¿Cuál falta?"    color="#26C6DA" sombra="#0097A7" textColor="#ffffff" onClick={() => onJuego("falta")} />
-        <BotonazoMenu emoji="⚖️"  etiqueta="Más o menos"     color="#FFA726" sombra="#E65100" textColor="#ffffff" onClick={() => onJuego("masomenos")} />
-        <BotonazoMenu emoji="➕"  etiqueta="Sumar"           color="#EC407A" sombra="#AD1457" textColor="#ffffff" onClick={() => onJuego("sumar")} />
-        <BotonazoMenu emoji="↔️"  etiqueta="Antes y después" color="#7E57C2" sombra="#4527A0" textColor="#ffffff" onClick={() => onJuego("antesdespues")} />
+        {activo("trazos")       && <BotonazoMenu emoji="✏️"   etiqueta="Trazos"          color="#FFC93D" sombra="#E6A800" textColor="#2A4D69" onClick={() => onJuego("trazos")} />}
+        {activo("colorear")     && <BotonazoMenu emoji="🎨"   etiqueta="Colorear"        color="#5BCB77" sombra="#3BA055" textColor="#ffffff" onClick={() => onJuego("colorear")} />}
+        {activo("aventura")     && <BotonazoMenu emoji="⭐"   etiqueta="Aventura"        color="#6BA8FF" sombra="#3A72CC" textColor="#ffffff" onClick={() => onJuego("aventura")} />}
+        {activo("numeros")      && <BotonazoMenu emoji="🔢"   etiqueta="Números"         color="#FF8C42" sombra="#CC6010" textColor="#ffffff" onClick={() => onJuego("numeros")} />}
+        {activo("vocales")      && <BotonazoMenu emoji="🔤"   etiqueta="Vocales"         color="#C792EA" sombra="#8A4FBF" textColor="#ffffff" onClick={() => onJuego("vocales")} />}
+        {activo("contar")       && <BotonazoMenu emoji="🧮"   etiqueta="Contar"          color="#26C6DA" sombra="#0097A7" textColor="#ffffff" onClick={() => onJuego("contar")} />}
+        {activo("escuchar_num") && <BotonazoMenu emoji="👂🔢" etiqueta="Escucha número"  color="#4ECDC4" sombra="#2A9D94" textColor="#ffffff" onClick={() => onJuego("escuchar_num")} />}
+        {activo("escuchar_voc") && <BotonazoMenu emoji="👂🔤" etiqueta="Escucha vocal"   color="#A78BFA" sombra="#6D4FC4" textColor="#ffffff" onClick={() => onJuego("escuchar_voc")} />}
+        {activo("pronunciar")   && <BotonazoMenu emoji="🎙️"  etiqueta="Pronunciar"      color="#2ECC71" sombra="#1A9E55" textColor="#ffffff" onClick={() => onJuego("pronunciar")} />}
+        {activo("ordenar")      && <BotonazoMenu emoji="🔢"  etiqueta="Ordenar"         color="#FF6B6B" sombra="#CC3333" textColor="#ffffff" onClick={() => onJuego("ordenar")} />}
+        {activo("falta")        && <BotonazoMenu emoji="🔍"  etiqueta="¿Cuál falta?"    color="#26C6DA" sombra="#0097A7" textColor="#ffffff" onClick={() => onJuego("falta")} />}
+        {activo("masomenos")    && <BotonazoMenu emoji="⚖️"  etiqueta="Más o menos"     color="#FFA726" sombra="#E65100" textColor="#ffffff" onClick={() => onJuego("masomenos")} />}
+        {activo("sumar")        && <BotonazoMenu emoji="➕"  etiqueta="Sumar"           color="#EC407A" sombra="#AD1457" textColor="#ffffff" onClick={() => onJuego("sumar")} />}
+        {activo("antesdespues") && <BotonazoMenu emoji="↔️"  etiqueta="Antes y después" color="#7E57C2" sombra="#4527A0" textColor="#ffffff" onClick={() => onJuego("antesdespues")} />}
+        {activo("lectura")      && <BotonazoMenu emoji="📖"  etiqueta="Leer"            color="#4FC3F7" sombra="#0288D1" textColor="#ffffff" onClick={() => onJuego("lectura")} />}
       </div>
 
       {/* Botón invisible 3s → /padres */}
