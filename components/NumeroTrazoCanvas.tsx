@@ -127,10 +127,10 @@ function numeroCamino(d: number, ox:number, oy:number, w:number, h:number): Punt
         segmento(L+w*0.05, B-h*0.04, R, B)
       );
     case 3:
-      // Arco superior + arco inferior
+      // Arco superior + arco inferior, unidos en el centro-derecha
       return concat(
-        arco(cx, T+h*0.28, rx, ry*0.45, -PI*0.9, PI*0.3),
-        arco(cx, T+h*0.72, rx, ry*0.45, -PI*0.3, PI*0.85)
+        arco(cx, T+h*0.27, rx*0.95, ry*0.42, -PI*0.85, PI*0.5),
+        arco(cx, T+h*0.72, rx*0.95, ry*0.45, -PI*0.5, PI*0.85)
       );
     case 4:
       // Palo izquierdo + travesaño + palo derecho
@@ -140,11 +140,11 @@ function numeroCamino(d: number, ox:number, oy:number, w:number, h:number): Punt
         segmento(R-w*0.1, T, R-w*0.1, B)
       );
     case 5:
-      // Techo + palo izquierdo-arriba + curva inferior
+      // Techo (der→izq) + palo izquierdo + panza inferior
       return concat(
-        segmento(R, T, L, T),
-        segmento(L, T, L, MY-h*0.04),
-        arco(cx, T+h*0.65, rx*0.92, ry*0.45, -PI, PI*0.85)
+        segmento(R-w*0.05, T+h*0.02, L+w*0.1, T+h*0.02),
+        segmento(L+w*0.1, T+h*0.02, L+w*0.1, MY),
+        arco(cx, T+h*0.68, rx*0.95, ry*0.44, -PI*0.75, PI*0.75)
       );
     case 6:
       // Arco superior (apertura) + círculo inferior
@@ -165,10 +165,10 @@ function numeroCamino(d: number, ox:number, oy:number, w:number, h:number): Punt
         arco(cx, T+h*0.7, rx, ry*0.42, -PI/2, PI*1.5)
       );
     case 9:
-      // Círculo superior + cola derecha
+      // Círculo superior antihorario cerrado + cola que baja por la derecha
       return concat(
-        arco(cx, T+h*0.33, rx, ry*0.42, PI/2, PI*2.5),
-        segmento(R-w*0.07, T+h*0.33, R-w*0.07, B)
+        arco(cx, T+h*0.3, rx*0.9, ry*0.42, -PI/2, -PI*2.5, N*4),
+        segmento(cx+rx*0.9, T+h*0.3, cx+rx*0.9, B)
       );
     default:
       return [];

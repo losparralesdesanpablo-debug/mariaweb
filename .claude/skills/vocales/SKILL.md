@@ -1,6 +1,6 @@
 ---
 name: vocales
-description: Ajustar o ampliar el juego de trazos de vocales (A, E, I, O, U). Paths de cada letra, colores, progresión.
+description: Ajustar o ampliar el juego de trazos de vocales minúsculas (a, e, i, o, u). Paths script con direccionalidad escolar, colores, progresión.
 ---
 
 # Juego: Vocales
@@ -11,12 +11,27 @@ Misma mecánica que Trazos y Números: canvas con `segmento()` / `arco()` / `con
 
 ## Estructura del componente
 ```
-VOCALES = ["A","E","I","O","U"]
+VOCALES = ["a","e","i","o","u"]   ← minúsculas script
 FRASES  = ["a","e","i","o","u"]   ← texto para hablar()
-GROSOR  = 52                       ← grosor del trazo en px
+GROSOR  = 40                       ← grosor del trazo en px
 vocalCamino(v, ox, oy, w, h)       ← devuelve Punto[] para cada vocal
-calcCuadro()                       ← caja centrada, w = min(55vw, 300px), h = w*1.35
+calcCuadro()                       ← cuadro de trazo, MITAD DERECHA del viewport
+calcCuadroRef()                    ← cuadro de la letra de referencia, MITAD IZQUIERDA
 ```
+
+Layout: la letra de referencia grande se dibuja a la IZQUIERDA con los MISMOS
+paths de `vocalCamino()` (idéntica al trazo por construcción). El cuadro donde
+la niña traza está a la DERECHA. Un "dedo animado" 👆 recorre el path en bucle
+cuando no se está dibujando.
+
+## Grafía (direccionalidad escolar española, letra script)
+Ángulos del canvas (Y hacia abajo): `-PI/2`=arriba, `0`=derecha, `PI/2`=abajo,
+`PI`=izquierda. **Ángulo DECRECIENTE = antihorario en pantalla.**
+- **a**: círculo antihorario desde arriba-derecha + palo derecho pegado bajando.
+- **e**: barra horizontal (izq→der) en el medio + arco antihorario que abre abajo-der.
+- **i**: palo vertical (arriba→abajo) + punto encima (se traza al final).
+- **o**: círculo antihorario cerrado empezando arriba.
+- **u**: palo izq baja + curva inferior + palo der sube y baja (colita).
 
 ## Props
 ```ts
@@ -42,8 +57,12 @@ Editar el `case` correspondiente en `vocalCamino()` usando:
 - `arco(cx, cy, rx, ry, a0, a1, n?)` — arco elíptico (ángulos en radianes)
 - `concat(...arrays)` — une paths sin duplicar el punto de unión
 
-Coordenadas relativas al rectángulo `(ox, oy, w, h)`:
-- `T = oy`, `B = oy+h`, `L = ox`, `R = ox+w`, `MX = ox+w/2`, `MY = oy+h/2`
+Coordenadas relativas al rectángulo `(ox, oy, w, h)`. En `vocalCamino` se usa
+la zona de la x: `xTop = T + h*0.32`, `xBot = B - h*0.06`, `cyC` centro.
+
+**Verificar formas sin desplegar:** generar un SVG con los paths y convertir a
+PNG (`rsvg-convert`) para inspeccionar. Marcar inicio (verde) y fin (rojo) del
+trazo ayuda a validar la direccionalidad.
 
 ## Añadir más letras
 1. Ampliar el array `VOCALES` y `FRASES`

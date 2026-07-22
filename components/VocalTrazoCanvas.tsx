@@ -101,67 +101,72 @@ function concat(...arrays: Punto[][]): Punto[] {
 }
 
 // Construye el camino de la vocal `v` dentro del rectángulo (ox,oy,w,h)
+// Grafía script/imprenta con direccionalidad escolar española.
+// Sistema de ángulos del canvas (Y hacia abajo): -PI/2=arriba, 0=derecha,
+// PI/2=abajo, PI=izquierda. Ángulo DECRECIENTE = antihorario en pantalla.
 function vocalCamino(v: "a"|"e"|"i"|"o"|"u", ox:number, oy:number, w:number, h:number): Punto[] {
   const PI = Math.PI;
   const cx = ox+w/2;
   const T=oy, B=oy+h;
 
+  // Zona de la "x" (cuerpo de la minúscula)
+  const xTop = T + h * 0.32;
+  const xBot = B - h * 0.06;
+  const cyC  = (xTop + xBot) / 2;
+
   switch(v) {
     case "a": {
-      // Bucle circular grande + palo recto a la derecha (separado del círculo)
-      const xTop = T + h * 0.30;
-      const xBot = B - h * 0.05;
-      const cyC  = (xTop + xBot) / 2;
-      const rx   = w * 0.28;
-      const ry   = (xBot - xTop) / 2;
-      const cCirc = cx - w * 0.05;        // círculo desplazado a la izquierda
-      const palX  = cCirc + rx + w * 0.04; // palo separado del círculo
+      // "a" de una planta: círculo antihorario que arranca arriba-derecha,
+      // baja el palo derecho pegado al círculo. Un solo trazo continuo.
+      const rx = w * 0.24;
+      const ry = (xBot - xTop) / 2;
+      const palX = cx + rx;
       return concat(
-        arco(cCirc, cyC, rx, ry, -PI/2, PI*1.5, N*4),
-        segmento(palX, xTop, palX, xBot)
+        // círculo antihorario: empieza arriba-derecha (~ -PI/4), da la vuelta completa
+        arco(cx, cyC, rx, ry, -PI*0.25, -PI*2.25, N*4),
+        // palo derecho hacia abajo, cerrando en la panza
+        segmento(palX, xTop + ry*0.15, palX, xBot)
       );
     }
     case "e": {
-      // Travesaño horizontal + arco (abre por la derecha-abajo)
-      const xTop = T + h * 0.30;
-      const xBot = B - h * 0.05;
-      const cyC  = (xTop + xBot) / 2;
-      const rx   = w * 0.32;
-      const ry   = (xBot - xTop) / 2;
+      // Empieza con la barra horizontal (izq→der) en el medio,
+      // sube por la derecha y gira antihorario hasta abrir abajo-derecha.
+      const rx = w * 0.26;
+      const ry = (xBot - xTop) / 2;
       return concat(
-        segmento(cx - rx*0.9, cyC, cx + rx*0.85, cyC),
-        arco(cx, cyC, rx, ry, 0, PI*1.35, N*3)
+        // barra horizontal de izquierda a derecha
+        segmento(cx - rx, cyC, cx + rx, cyC, Math.floor(N/2)),
+        // desde la derecha (0), antihorario hacia arriba, izquierda, abajo y abre a la derecha
+        arco(cx, cyC, rx, ry, 0, -PI*1.55, N*4)
       );
     }
     case "i": {
-      // Punto bien arriba y separado + palo vertical
-      const puntoY = T + h * 0.15;
-      const xTop   = T + h * 0.32;
-      const xBot   = B - h * 0.05;
+      // Palo vertical de arriba a abajo + punto encima (se traza al final).
+      const puntoY = T + h * 0.16;
       return concat(
-        arco(cx, puntoY, w*0.09, h*0.06, 0, PI*2, N),
-        segmento(cx, xTop, cx, xBot)
+        segmento(cx, xTop, cx, xBot),
+        // salto al punto: el arco cerrado del puntito
+        arco(cx, puntoY, w*0.045, h*0.033, -PI/2, PI*1.5, N)
       );
     }
     case "o": {
-      // Círculo grande en la zona de la x-height
-      const xTop = T + h * 0.30;
-      const xBot = B - h * 0.05;
-      const cyC  = (xTop + xBot) / 2;
-      const rx   = w * 0.36;
-      const ry   = (xBot - xTop) / 2;
-      return arco(cx, cyC, rx, ry, -PI/2, PI*1.5, N*4);
+      // Círculo antihorario empezando arriba. Un solo trazo cerrado.
+      const rx = w * 0.30;
+      const ry = (xBot - xTop) / 2;
+      return arco(cx, cyC, rx, ry, -PI/2, -PI*2.5, N*4);
     }
     case "u": {
-      // Palo izquierdo + curva inferior + palo derecho
-      const xTop = T + h * 0.30;
-      const xBot = B - h * 0.05;
-      const rx   = w * 0.26;
-      const ry   = h * 0.14;
+      // Baja palo izq, curva abajo (antihorario), sube palo der, baja colita.
+      const rx = w * 0.22;
+      const ry = h * 0.13;
       return concat(
         segmento(cx - rx, xTop, cx - rx, xBot - ry),
+        // curva inferior de izquierda a derecha (media vuelta por abajo)
         arco(cx, xBot - ry, rx, ry, PI, 0),
-        segmento(cx + rx, xBot - ry, cx + rx, xBot)
+        // sube el palo derecho
+        segmento(cx + rx, xBot - ry, cx + rx, xTop),
+        // baja de nuevo (segundo trazo del palo derecho, para la colita)
+        segmento(cx + rx, xTop, cx + rx, xBot)
       );
     }
     default:
