@@ -18,11 +18,12 @@ import MasMenosCanvas from "./MasMenosCanvas";
 import SumarCanvas from "./SumarCanvas";
 import AntesDepuesCanvas from "./AntesDepuesCanvas";
 import LecturaCanvas from "./LecturaCanvas";
+import ColoresCanvas from "./ColoresCanvas";
 import { setNinoId, iniciarReintentoCola } from "@/lib/trazo-store";
 import type { Actividad, ConfiguracionNino, VideoPremio, Palabra, PalabraProgreso } from "@/lib/types";
 import { CONFIG_DEFAULT } from "@/lib/types";
 
-type Modo = "pin" | "menu" | "video" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues" | "lectura";
+type Modo = "pin" | "menu" | "video" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues" | "lectura" | "colores";
 
 interface ZonaNinaProps {
   actividades: Actividad[];
@@ -201,6 +202,15 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
         palabras={palabras}
         progreso={palabrasProgreso}
         ninoId={ninoId ?? ""}
+        sonido={config.sonido}
+        voz={config.voz}
+        onVolver={juegoCompletado}
+      />
+    );
+  }
+  if (modo === "colores") {
+    return (
+      <ColoresCanvas
         sonido={config.sonido}
         voz={config.voz}
         onVolver={juegoCompletado}

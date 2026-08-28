@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface MenuInicioProps {
-  onJuego: (juego: "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues" | "lectura") => void;
+  onJuego: (juego: "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues" | "lectura" | "colores") => void;
   contador: number;
   umbral: number;
   onPremio: () => void;
@@ -81,6 +81,7 @@ export default function MenuInicio({ onJuego, contador, umbral, onPremio, juegos
         {activo("sumar")        && <BotonazoMenu emoji="➕"  etiqueta="Sumar"           color="#EC407A" sombra="#AD1457" textColor="#ffffff" onClick={() => onJuego("sumar")} />}
         {activo("antesdespues") && <BotonazoMenu emoji="↔️"  etiqueta="Antes y después" color="#7E57C2" sombra="#4527A0" textColor="#ffffff" onClick={() => onJuego("antesdespues")} />}
         {activo("lectura")      && <BotonazoMenu emoji="📖"  etiqueta="Leer"            color="#4FC3F7" sombra="#0288D1" textColor="#ffffff" onClick={() => onJuego("lectura")} />}
+        {activo("colores")      && <BotonazoMenu emoji="🌈"  etiqueta="Colores"         color="#EC407A" sombra="#AD1457" textColor="#ffffff" onClick={() => onJuego("colores")} />}
       </div>
 
       {/* Botón invisible 3s → /padres */}
