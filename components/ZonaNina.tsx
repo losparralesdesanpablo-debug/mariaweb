@@ -19,11 +19,13 @@ import SumarCanvas from "./SumarCanvas";
 import AntesDepuesCanvas from "./AntesDepuesCanvas";
 import LecturaCanvas from "./LecturaCanvas";
 import ColoresCanvas from "./ColoresCanvas";
+import EmojiColorCanvas, { SET_FRUTAS, SET_NATURALEZA } from "./EmojiColorCanvas";
+import PintarColorCanvas from "./PintarColorCanvas";
 import { setNinoId, iniciarReintentoCola } from "@/lib/trazo-store";
 import type { Actividad, ConfiguracionNino, VideoPremio, Palabra, PalabraProgreso } from "@/lib/types";
 import { CONFIG_DEFAULT } from "@/lib/types";
 
-type Modo = "pin" | "menu" | "video" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues" | "lectura" | "colores";
+type Modo = "pin" | "menu" | "video" | "trazos" | "colorear" | "aventura" | "numeros" | "vocales" | "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" | "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues" | "lectura" | "colores" | "frutas_color" | "nat_color" | "pintar";
 
 interface ZonaNinaProps {
   actividades: Actividad[];
@@ -211,6 +213,35 @@ export default function ZonaNina({ actividades, config, ninoId, ninoNombre, nino
   if (modo === "colores") {
     return (
       <ColoresCanvas
+        sonido={config.sonido}
+        voz={config.voz}
+        onVolver={juegoCompletado}
+      />
+    );
+  }
+  if (modo === "frutas_color") {
+    return (
+      <EmojiColorCanvas
+        set={SET_FRUTAS}
+        sonido={config.sonido}
+        voz={config.voz}
+        onVolver={juegoCompletado}
+      />
+    );
+  }
+  if (modo === "nat_color") {
+    return (
+      <EmojiColorCanvas
+        set={SET_NATURALEZA}
+        sonido={config.sonido}
+        voz={config.voz}
+        onVolver={juegoCompletado}
+      />
+    );
+  }
+  if (modo === "pintar") {
+    return (
+      <PintarColorCanvas
         sonido={config.sonido}
         voz={config.voz}
         onVolver={juegoCompletado}

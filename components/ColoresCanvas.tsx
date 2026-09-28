@@ -146,16 +146,15 @@ export default function ColoresCanvas({ sonido, voz, onVolver }: ColoresCanvasPr
         Toca el color <span style={{ color: pedido.hex }}>{pedido.nombre}</span>
       </div>
 
-      {/* Celebración overlay */}
+      {/* Celebración overlay (abajo, para no tapar el círculo tocado) */}
       {estado === "correcto" && (
         <div style={{
-          position: "fixed", inset: 0, zIndex: 30,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgba(255,255,255,.15)",
+          position: "fixed", left: 0, right: 0, bottom: "4%", zIndex: 30,
+          display: "flex", alignItems: "flex-end", justifyContent: "center",
           pointerEvents: "none",
         }}>
           <div style={{
-            fontSize: "clamp(80px,18vw,140px)",
+            fontSize: "clamp(70px,15vw,120px)",
             animation: "popIn .35s cubic-bezier(.34,1.56,.64,1)",
           }}>
             🎉

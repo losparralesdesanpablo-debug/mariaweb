@@ -1,7 +1,8 @@
 export type JuegoId =
   "trazos" | "colorear" | "aventura" | "numeros" | "vocales" |
   "contar" | "escuchar_num" | "escuchar_voc" | "pronunciar" |
-  "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues" | "lectura";
+  "ordenar" | "falta" | "masomenos" | "sumar" | "antesdespues" | "lectura" |
+  "colores" | "frutas_color" | "nat_color" | "pintar";
 
 export interface JuegoCatalogo {
   id: JuegoId;
@@ -27,6 +28,10 @@ export const JUEGOS_CATALOGO: JuegoCatalogo[] = [
   { id: "sumar",        emoji: "➕",   label: "Sumar",           edadMin: 5, tieneDificultad: true  },
   { id: "antesdespues", emoji: "↔️",   label: "Antes y después",edadMin: 5, tieneDificultad: true  },
   { id: "lectura",      emoji: "📖",   label: "Leer",            edadMin: 4, tieneDificultad: false },
+  { id: "colores",      emoji: "🌈",   label: "Colores",         edadMin: 3, tieneDificultad: false },
+  { id: "frutas_color", emoji: "🍓",   label: "Frutas",          edadMin: 3, tieneDificultad: false },
+  { id: "nat_color",    emoji: "🌿",   label: "Naturaleza",      edadMin: 3, tieneDificultad: false },
+  { id: "pintar",       emoji: "🖌️",   label: "Pintar",          edadMin: 3, tieneDificultad: false },
 ];
 
 const _todosActivos = Object.fromEntries(
